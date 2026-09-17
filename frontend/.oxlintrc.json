@@ -1,0 +1,23 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["react", "typescript", "oxc"],
+  "ignorePatterns": ["src/api/generated/**", "src/routeTree.gen.ts"],
+  "rules": {
+    "react/rules-of-hooks": "error",
+    "react/only-export-components": ["warn", { "allowConstantExport": true }]
+  },
+  "overrides": [
+    {
+      // Route files export `Route`, shadcn/ui and provider files export helpers alongside components
+      // Generated or vendored components: shadcn/ui and `assistant-ui add thread` output
+      "files": [
+        "src/routes/**",
+        "src/components/ui/**",
+        "src/components/assistant-ui/**",
+        "src/components/{file,image,markdown-text,tooltip-icon-button}.tsx",
+        "src/lib/**"
+      ],
+      "rules": { "react/only-export-components": "off", "react/refs": "off" }
+    }
+  ]
+}
