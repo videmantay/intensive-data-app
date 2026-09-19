@@ -4,6 +4,7 @@ from typing import Annotated, Literal
 
 from fastapi import Depends, Request
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from sqlalchemy import URL
 
 BACKEND_DIR = Path(__file__).resolve().parent.parent
 
@@ -14,7 +15,8 @@ class Settings(BaseSettings):
     app_name: str = "FieldOps API"
     cors_origins: list[str] = ["http://localhost:5173"]
 
-    # Which database adapter to use. SQL is written in SAP HANA dialect either way.
+    # Which database to talk to. SQLAlchemy writes the right SQL for each one, so
+    # models and queries are identical either way.
     db_backend: Literal["sqlite", "hana"] = "sqlite"
 
     sqlite_path: Path = BACKEND_DIR / "data" / "app.db"
@@ -32,6 +34,28 @@ class Settings(BaseSettings):
     hana_password: str = ""
     hana_schema: str | None = None
     hana_encrypt: bool = True
+
+    def database_url(self) -> URL:
+        """The SQLAlchemy URL for `db_backend`.
+
+        HANA needs the `hana` extra (`uv sync --extra hana`), which installs the
+        `hana+hdbcli` dialect. Built with `URL.create` so passwords never need escaping.
+        """
+        if self.db_backend == "hana":
+            query = {"encrypt": "true" if self.hana_encrypt else "false"}
+            if self.hana_schema:
+                query["currentSchema"] = self.hana_schema
+            return URL.create(
+                "hana+hdbcli",
+                username=self.hana_user,
+                password=self.hana_password,
+                host=self.hana_host,
+                port=self.hana_port,
+                query=query,
+            )
+
+        self.sqlite_path.parent.mkdir(parents=True, exist_ok=True)
+        return URL.create("sqlite", database=str(self.sqlite_path))
 
 
 @lru_cache

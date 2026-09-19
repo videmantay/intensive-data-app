@@ -7,7 +7,7 @@ from pydantic import BaseModel
 
 from app.assistant.router import router as assistant_router
 from app.config import Settings, get_settings
-from app.db import create_database
+from app.db import create_db_engine, ping
 from app.db.migrate import run_migrations
 from app.items.router import router as items_router
 
@@ -28,9 +28,13 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
-        app.state.database = create_database(settings)
-        run_migrations(app.state.database)
-        yield
+        engine = create_db_engine(settings)
+        app.state.engine = engine
+        run_migrations(engine)
+        try:
+            yield
+        finally:
+            engine.dispose()
 
     app = FastAPI(title=settings.app_name, lifespan=lifespan, generate_unique_id_function=_operation_id)
     app.state.settings = settings  # endpoints read this via the AppSettings dependency
@@ -47,7 +51,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @api.get("/health", tags=["health"], response_model=Health)
     def health(request: Request):
         try:
-            db_ok = request.app.state.database.ping()
+            db_ok = ping(request.app.state.engine)
         except Exception:
             db_ok = False
         return Health(status="ok", database=f"{settings.db_backend} ({'up' if db_ok else 'down'})")

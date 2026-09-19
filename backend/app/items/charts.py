@@ -7,13 +7,14 @@ Build charts here exactly as you would in Streamlit. Endpoints return them with
 import pandas as pd
 import plotly.express as px
 from plotly.graph_objects import Figure
+from sqlmodel import Session
 
-from app.db.base import Connection
 from app.items import service
 
 
-def quantity_by_category(conn: Connection) -> Figure:
-    df = pd.DataFrame(service.totals_by_category(conn), columns=["category", "total_quantity", "item_count"])
+def quantity_by_category(session: Session) -> Figure:
+    totals = service.totals_by_category(session)
+    df = pd.DataFrame([t.model_dump() for t in totals])
     fig = px.bar(
         df,
         x="category",

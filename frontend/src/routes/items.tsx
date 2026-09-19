@@ -2,7 +2,7 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import type { CellEditRequestEvent, ColDef } from 'ag-grid-community'
 import { useState, type FormEvent } from 'react'
-import type { Item } from '@/api/generated'
+import type { ItemPublic as Item } from '@/api/generated'
 import {
   createItemMutation,
   deleteItemMutation,

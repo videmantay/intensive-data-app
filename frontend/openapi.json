@@ -66,7 +66,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/Item"
+                    "$ref": "#/components/schemas/ItemPublic"
                   },
                   "title": "Response List Items"
                 }
@@ -107,7 +107,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Item"
+                  "$ref": "#/components/schemas/ItemPublic"
                 }
               }
             }
@@ -195,7 +195,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Item"
+                  "$ref": "#/components/schemas/ItemPublic"
                 }
               }
             }
@@ -245,7 +245,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Item"
+                  "$ref": "#/components/schemas/ItemPublic"
                 }
               }
             }
@@ -399,7 +399,8 @@
           "total_quantity",
           "item_count"
         ],
-        "title": "CategoryTotal"
+        "title": "CategoryTotal",
+        "description": "Aggregate row, not a table."
       },
       "ChatMessage": {
         "properties": {
@@ -471,7 +472,47 @@
         ],
         "title": "Health"
       },
-      "Item": {
+      "ItemCreate": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "category": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Category",
+            "default": "General"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "quantity": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Quantity",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "ItemCreate"
+      },
+      "ItemPublic": {
         "properties": {
           "name": {
             "type": "string",
@@ -520,47 +561,8 @@
           "id",
           "created_at"
         ],
-        "title": "Item"
-      },
-      "ItemCreate": {
-        "properties": {
-          "name": {
-            "type": "string",
-            "maxLength": 255,
-            "minLength": 1,
-            "title": "Name"
-          },
-          "category": {
-            "type": "string",
-            "maxLength": 100,
-            "minLength": 1,
-            "title": "Category",
-            "default": "General"
-          },
-          "description": {
-            "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 2000
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Description"
-          },
-          "quantity": {
-            "type": "integer",
-            "minimum": 0.0,
-            "title": "Quantity",
-            "default": 0
-          }
-        },
-        "type": "object",
-        "required": [
-          "name"
-        ],
-        "title": "ItemCreate"
+        "title": "ItemPublic",
+        "description": "An item as returned by the API."
       },
       "ItemUpdate": {
         "properties": {

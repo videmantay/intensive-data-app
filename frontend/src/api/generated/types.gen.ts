@@ -20,6 +20,8 @@ export type AssistantStatus = {
 
 /**
  * CategoryTotal
+ *
+ * Aggregate row, not a table.
  */
 export type CategoryTotal = {
     /**
@@ -85,9 +87,33 @@ export type Health = {
 };
 
 /**
- * Item
+ * ItemCreate
  */
-export type Item = {
+export type ItemCreate = {
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Category
+     */
+    category?: string;
+    /**
+     * Description
+     */
+    description?: string | null;
+    /**
+     * Quantity
+     */
+    quantity?: number;
+};
+
+/**
+ * ItemPublic
+ *
+ * An item as returned by the API.
+ */
+export type ItemPublic = {
     /**
      * Name
      */
@@ -112,28 +138,6 @@ export type Item = {
      * Created At
      */
     created_at: string;
-};
-
-/**
- * ItemCreate
- */
-export type ItemCreate = {
-    /**
-     * Name
-     */
-    name: string;
-    /**
-     * Category
-     */
-    category?: string;
-    /**
-     * Description
-     */
-    description?: string | null;
-    /**
-     * Quantity
-     */
-    quantity?: number;
 };
 
 /**
@@ -255,7 +259,7 @@ export type ListItemsResponses = {
      *
      * Successful Response
      */
-    200: Array<Item>;
+    200: Array<ItemPublic>;
 };
 
 export type ListItemsResponse = ListItemsResponses[keyof ListItemsResponses];
@@ -280,7 +284,7 @@ export type CreateItemResponses = {
     /**
      * Successful Response
      */
-    201: Item;
+    201: ItemPublic;
 };
 
 export type CreateItemResponse = CreateItemResponses[keyof CreateItemResponses];
@@ -374,7 +378,7 @@ export type GetItemResponses = {
     /**
      * Successful Response
      */
-    200: Item;
+    200: ItemPublic;
 };
 
 export type GetItemResponse = GetItemResponses[keyof GetItemResponses];
@@ -404,7 +408,7 @@ export type UpdateItemResponses = {
     /**
      * Successful Response
      */
-    200: Item;
+    200: ItemPublic;
 };
 
 export type UpdateItemResponse = UpdateItemResponses[keyof UpdateItemResponses];

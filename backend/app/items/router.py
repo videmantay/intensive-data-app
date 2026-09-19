@@ -7,55 +7,55 @@ Function names become the generated frontend function names (e.g. `list_items` -
 from fastapi import APIRouter, HTTPException, Query, Response, status
 
 from app.charts import PlotlyFigure, figure_response
-from app.db import DbConn
+from app.db import DbSession
 from app.items import charts, service
-from app.items.schemas import CategoryTotal, Item, ItemCreate, ItemUpdate
+from app.items.models import CategoryTotal, ItemCreate, ItemPublic, ItemUpdate
 
 router = APIRouter(prefix="/items", tags=["items"])
 
 
-@router.get("", response_model=list[Item])
+@router.get("", response_model=list[ItemPublic])
 def list_items(
-    conn: DbConn,
+    session: DbSession,
     limit: int = Query(default=100, ge=1, le=1000),
     offset: int = Query(default=0, ge=0),
 ):
-    return service.list_items(conn, limit, offset)
+    return service.list_items(session, limit, offset)
 
 
 @router.get("/totals", response_model=list[CategoryTotal])
-def item_totals_by_category(conn: DbConn):
-    return service.totals_by_category(conn)
+def item_totals_by_category(session: DbSession):
+    return service.totals_by_category(session)
 
 
 @router.get("/charts/quantity-by-category", response_model=PlotlyFigure)
-def item_quantity_chart(conn: DbConn):
-    return figure_response(charts.quantity_by_category(conn))
+def item_quantity_chart(session: DbSession):
+    return figure_response(charts.quantity_by_category(session))
 
 
-@router.get("/{item_id}", response_model=Item)
-def get_item(item_id: int, conn: DbConn):
-    item = service.get_item(conn, item_id)
+@router.get("/{item_id}", response_model=ItemPublic)
+def get_item(item_id: int, session: DbSession):
+    item = service.get_item(session, item_id)
     if item is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Item not found")
     return item
 
 
-@router.post("", response_model=Item, status_code=status.HTTP_201_CREATED)
-def create_item(data: ItemCreate, conn: DbConn):
-    return service.create_item(conn, data)
+@router.post("", response_model=ItemPublic, status_code=status.HTTP_201_CREATED)
+def create_item(data: ItemCreate, session: DbSession):
+    return service.create_item(session, data)
 
 
-@router.patch("/{item_id}", response_model=Item)
-def update_item(item_id: int, data: ItemUpdate, conn: DbConn):
-    item = service.update_item(conn, item_id, data)
+@router.patch("/{item_id}", response_model=ItemPublic)
+def update_item(item_id: int, data: ItemUpdate, session: DbSession):
+    item = service.update_item(session, item_id, data)
     if item is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Item not found")
     return item
 
 
 @router.delete("/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_item(item_id: int, conn: DbConn):
-    if not service.delete_item(conn, item_id):
+def delete_item(item_id: int, session: DbSession):
+    if not service.delete_item(session, item_id):
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Item not found")
     return Response(status_code=status.HTTP_204_NO_CONTENT)
