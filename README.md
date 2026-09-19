@@ -13,6 +13,7 @@ A data app with a Python backend and a thin React frontend, built so that most o
 # Terminal 1: API on http://127.0.0.1:8000 (interactive docs at /docs)
 cd backend
 uv sync
+uv run python -m app.auth.create_user yourname   # once: there is no sign-up page
 uv run fastapi dev app/main.py
 
 # Terminal 2: UI on http://localhost:5173 (forwards /api to the backend)
@@ -34,22 +35,52 @@ routes/items.tsx ── useQuery ──────►  items/router.py ──�
 - **The backend owns logic, queries, and charts.** Build charts with `plotly.express` just like in Streamlit and return them with `figure_response(fig)`.
 - **The frontend displays data.** `<DataGrid>` (AG Grid) shows tables and `<PlotlyChart>` shows backend figures.
 - **The API client is generated.** `npm run gen:api` reads FastAPI's OpenAPI schema and writes typed functions to `frontend/src/api/generated/`. If a backend change breaks the frontend, `npm run build` reports it.
-- **Service functions are the source of truth.** The REST endpoints call them, and future assistant/agent tools will call the same functions.
+- **Service functions are the source of truth.** The REST endpoints call them, and the assistant's tools call the same functions.
 
 See [CLAUDE.md](CLAUDE.md) for the step-by-step recipe for adding a feature.
 
+## Sign-in
+
+Every page needs a signed-in user; dashboards and chats belong to that user. Accounts are created from
+the command line (`uv run python -m app.auth.create_user <name>`, which also resets a password). The
+session is a signed cookie: set `SECRET_KEY` in `backend/.env` so sign-ins survive a restart, and
+`SESSION_HTTPS_ONLY=true` when serving over HTTPS.
+
+## Dashboards and Explore
+
+- **Dashboard** (`/`): each user's dashboards are grids of tiles. "Edit layout" lets you drag tiles by
+  their title bar and resize them; "Add widget" opens a point-and-click builder (dataset, group-bys,
+  measures, filters, chart type) with a live preview and a recommended chart.
+- **Explore** (`/explore`): ask questions in plain language. The assistant queries the data and draws the
+  chart that suits it; if you ask for a chart type it draws that when the data allows, and suggests a
+  better one when there is one. Any chart can be pinned with "Add to dashboard", or by asking. Chats are
+  saved per user. The header's "Assistant" button opens the same chat in a side panel.
+
+Every widget, whether built by hand or by the assistant, is a **`WidgetSpec`**: a dataset, dimensions,
+measures, filters and a chart type. It never contains SQL. The backend turns it into a SQLAlchemy query
+using only the fields each feature registers in `app/<feature>/dataset.py` (see `app/analytics/`), so
+pinned charts re-run on current data (a "last week" filter keeps meaning last week).
+
+```
+Explore chat ─► assistant/agent.py (pydantic-ai) ─► tools: analytics/tools.py, dashboards/tools.py
+Widget builder ─────────────────────────────────►┐
+Dashboard tiles ─── widget_data ─────────────────►├─► analytics/service.py: query.py ► recommend.py ► render.py
+                                                   ┘   (WidgetSpec → SQLAlchemy → pandas → Plotly)
+```
+
 ## Assistant
 
-The header's "Assistant" button opens a chat panel backed by an OpenAI model. To enable it, create `backend/.env` with:
+The assistant uses an OpenAI model through the backend; the browser never sees the key. Create
+`backend/.env` with:
 
 ```sh
 OPENAI_API_KEY=sk-...
-OPENAI_MODEL=gpt-4o-mini   # any model your account can use
+OPENAI_MODEL=gpt-4o-mini   # any tool-calling model; larger ones plan multi-step questions better
 ```
 
-Then restart the API. Without a key the panel still opens and tells you what to set. The key stays on the
-backend, and requests stream through `POST /api/assistant/chat`. Edit the assistant's instructions in
-`backend/app/assistant/prompts.py`.
+Then restart the API. Without a key the chat still opens and tells you what to set. Its behavior lives in
+`backend/app/assistant/prompts.py` and the chart-choice guide `backend/app/assistant/skills/charting.md`.
+After changing either, run `uv run python -m evals.charting` (uses your key) to see which charts it picks.
 
 ## Database: SQLite for dev, HANA for production
 

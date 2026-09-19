@@ -1,17 +1,14 @@
-from typing import Literal
+from typing import Any
 
-from pydantic import BaseModel, Field
-
-
-class ChatMessage(BaseModel):
-    role: Literal["user", "assistant"]
-    content: str
-
-
-class ChatRequest(BaseModel):
-    messages: list[ChatMessage] = Field(min_length=1)
+from pydantic import BaseModel
 
 
 class AssistantStatus(BaseModel):
     configured: bool
     model: str
+
+
+class ThreadMessages(BaseModel):
+    """A thread's messages in the Vercel AI SDK `UIMessage` shape."""
+
+    messages: list[dict[str, Any]]

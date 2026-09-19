@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AssistantChatData, AssistantChatErrors, AssistantChatResponses, AssistantStatusData, AssistantStatusResponses, CreateItemData, CreateItemErrors, CreateItemResponses, DeleteItemData, DeleteItemErrors, DeleteItemResponses, GetItemData, GetItemErrors, GetItemResponses, HealthData, HealthResponses, ItemQuantityChartData, ItemQuantityChartResponses, ItemTotalsByCategoryData, ItemTotalsByCategoryResponses, ListItemsData, ListItemsErrors, ListItemsResponses, UpdateItemData, UpdateItemErrors, UpdateItemResponses } from './types.gen';
+import type { AssistantChatData, AssistantChatResponses, AssistantStatusData, AssistantStatusResponses, CreateDashboardData, CreateDashboardErrors, CreateDashboardResponses, CreateItemData, CreateItemErrors, CreateItemResponses, CreateThreadData, CreateThreadResponses, CreateWidgetData, CreateWidgetErrors, CreateWidgetResponses, CurrentUserData, CurrentUserResponses, DeleteDashboardData, DeleteDashboardErrors, DeleteDashboardResponses, DeleteItemData, DeleteItemErrors, DeleteItemResponses, DeleteThreadData, DeleteThreadErrors, DeleteThreadResponses, DeleteWidgetData, DeleteWidgetErrors, DeleteWidgetResponses, DimensionValuesData, DimensionValuesErrors, DimensionValuesResponses, GetDashboardData, GetDashboardErrors, GetDashboardResponses, GetItemData, GetItemErrors, GetItemResponses, HealthData, HealthResponses, ItemQuantityChartData, ItemQuantityChartResponses, ItemTotalsByCategoryData, ItemTotalsByCategoryResponses, ListDashboardsData, ListDashboardsResponses, ListDatasetsData, ListDatasetsResponses, ListItemsData, ListItemsErrors, ListItemsResponses, ListThreadsData, ListThreadsResponses, LoginData, LoginErrors, LoginResponses, LogoutData, LogoutResponses, PreviewWidgetData, PreviewWidgetErrors, PreviewWidgetResponses, RenameDashboardData, RenameDashboardErrors, RenameDashboardResponses, RenameThreadData, RenameThreadErrors, RenameThreadResponses, SaveDashboardLayoutData, SaveDashboardLayoutErrors, SaveDashboardLayoutResponses, ThreadMessagesData, ThreadMessagesErrors, ThreadMessagesResponses, UpdateItemData, UpdateItemErrors, UpdateItemResponses, UpdateWidgetData, UpdateWidgetErrors, UpdateWidgetResponses, WidgetDataData, WidgetDataErrors, WidgetDataResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -22,6 +22,28 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
  * Health
  */
 export const health = <ThrowOnError extends boolean = false>(options?: Options<HealthData, ThrowOnError>): RequestResult<HealthResponses, unknown, ThrowOnError> => (options?.client ?? client).get<HealthResponses, unknown, ThrowOnError>({ url: '/api/health', ...options });
+
+/**
+ * Login
+ */
+export const login = <ThrowOnError extends boolean = false>(options: Options<LoginData, ThrowOnError>): RequestResult<LoginResponses, LoginErrors, ThrowOnError> => (options.client ?? client).post<LoginResponses, LoginErrors, ThrowOnError>({
+    url: '/api/auth/login',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Logout
+ */
+export const logout = <ThrowOnError extends boolean = false>(options?: Options<LogoutData, ThrowOnError>): RequestResult<LogoutResponses, unknown, ThrowOnError> => (options?.client ?? client).post<LogoutResponses, unknown, ThrowOnError>({ url: '/api/auth/logout', ...options });
+
+/**
+ * Current User
+ */
+export const currentUser = <ThrowOnError extends boolean = false>(options?: Options<CurrentUserData, ThrowOnError>): RequestResult<CurrentUserResponses, unknown, ThrowOnError> => (options?.client ?? client).get<CurrentUserResponses, unknown, ThrowOnError>({ url: '/api/auth/me', ...options });
 
 /**
  * List Items
@@ -73,6 +95,113 @@ export const updateItem = <ThrowOnError extends boolean = false>(options: Option
 });
 
 /**
+ * List Datasets
+ */
+export const listDatasets = <ThrowOnError extends boolean = false>(options?: Options<ListDatasetsData, ThrowOnError>): RequestResult<ListDatasetsResponses, unknown, ThrowOnError> => (options?.client ?? client).get<ListDatasetsResponses, unknown, ThrowOnError>({ url: '/api/analytics/datasets', ...options });
+
+/**
+ * Dimension Values
+ */
+export const dimensionValues = <ThrowOnError extends boolean = false>(options: Options<DimensionValuesData, ThrowOnError>): RequestResult<DimensionValuesResponses, DimensionValuesErrors, ThrowOnError> => (options.client ?? client).get<DimensionValuesResponses, DimensionValuesErrors, ThrowOnError>({ url: '/api/analytics/datasets/{dataset}/values/{field}', ...options });
+
+/**
+ * Preview Widget
+ */
+export const previewWidget = <ThrowOnError extends boolean = false>(options: Options<PreviewWidgetData, ThrowOnError>): RequestResult<PreviewWidgetResponses, PreviewWidgetErrors, ThrowOnError> => (options.client ?? client).post<PreviewWidgetResponses, PreviewWidgetErrors, ThrowOnError>({
+    url: '/api/analytics/preview',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * List Dashboards
+ */
+export const listDashboards = <ThrowOnError extends boolean = false>(options?: Options<ListDashboardsData, ThrowOnError>): RequestResult<ListDashboardsResponses, unknown, ThrowOnError> => (options?.client ?? client).get<ListDashboardsResponses, unknown, ThrowOnError>({ url: '/api/dashboards', ...options });
+
+/**
+ * Create Dashboard
+ */
+export const createDashboard = <ThrowOnError extends boolean = false>(options: Options<CreateDashboardData, ThrowOnError>): RequestResult<CreateDashboardResponses, CreateDashboardErrors, ThrowOnError> => (options.client ?? client).post<CreateDashboardResponses, CreateDashboardErrors, ThrowOnError>({
+    url: '/api/dashboards',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Delete Dashboard
+ */
+export const deleteDashboard = <ThrowOnError extends boolean = false>(options: Options<DeleteDashboardData, ThrowOnError>): RequestResult<DeleteDashboardResponses, DeleteDashboardErrors, ThrowOnError> => (options.client ?? client).delete<DeleteDashboardResponses, DeleteDashboardErrors, ThrowOnError>({ url: '/api/dashboards/{dashboard_id}', ...options });
+
+/**
+ * Get Dashboard
+ */
+export const getDashboard = <ThrowOnError extends boolean = false>(options: Options<GetDashboardData, ThrowOnError>): RequestResult<GetDashboardResponses, GetDashboardErrors, ThrowOnError> => (options.client ?? client).get<GetDashboardResponses, GetDashboardErrors, ThrowOnError>({ url: '/api/dashboards/{dashboard_id}', ...options });
+
+/**
+ * Rename Dashboard
+ */
+export const renameDashboard = <ThrowOnError extends boolean = false>(options: Options<RenameDashboardData, ThrowOnError>): RequestResult<RenameDashboardResponses, RenameDashboardErrors, ThrowOnError> => (options.client ?? client).patch<RenameDashboardResponses, RenameDashboardErrors, ThrowOnError>({
+    url: '/api/dashboards/{dashboard_id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Save Dashboard Layout
+ */
+export const saveDashboardLayout = <ThrowOnError extends boolean = false>(options: Options<SaveDashboardLayoutData, ThrowOnError>): RequestResult<SaveDashboardLayoutResponses, SaveDashboardLayoutErrors, ThrowOnError> => (options.client ?? client).put<SaveDashboardLayoutResponses, SaveDashboardLayoutErrors, ThrowOnError>({
+    url: '/api/dashboards/{dashboard_id}/layout',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Create Widget
+ */
+export const createWidget = <ThrowOnError extends boolean = false>(options: Options<CreateWidgetData, ThrowOnError>): RequestResult<CreateWidgetResponses, CreateWidgetErrors, ThrowOnError> => (options.client ?? client).post<CreateWidgetResponses, CreateWidgetErrors, ThrowOnError>({
+    url: '/api/dashboards/{dashboard_id}/widgets',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Delete Widget
+ */
+export const deleteWidget = <ThrowOnError extends boolean = false>(options: Options<DeleteWidgetData, ThrowOnError>): RequestResult<DeleteWidgetResponses, DeleteWidgetErrors, ThrowOnError> => (options.client ?? client).delete<DeleteWidgetResponses, DeleteWidgetErrors, ThrowOnError>({ url: '/api/widgets/{widget_id}', ...options });
+
+/**
+ * Update Widget
+ */
+export const updateWidget = <ThrowOnError extends boolean = false>(options: Options<UpdateWidgetData, ThrowOnError>): RequestResult<UpdateWidgetResponses, UpdateWidgetErrors, ThrowOnError> => (options.client ?? client).patch<UpdateWidgetResponses, UpdateWidgetErrors, ThrowOnError>({
+    url: '/api/widgets/{widget_id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Widget Data
+ */
+export const widgetData = <ThrowOnError extends boolean = false>(options: Options<WidgetDataData, ThrowOnError>): RequestResult<WidgetDataResponses, WidgetDataErrors, ThrowOnError> => (options.client ?? client).get<WidgetDataResponses, WidgetDataErrors, ThrowOnError>({ url: '/api/widgets/{widget_id}/data', ...options });
+
+/**
  * Assistant Status
  *
  * Lets the UI show whether a key is configured before anyone types.
@@ -80,13 +209,40 @@ export const updateItem = <ThrowOnError extends boolean = false>(options: Option
 export const assistantStatus = <ThrowOnError extends boolean = false>(options?: Options<AssistantStatusData, ThrowOnError>): RequestResult<AssistantStatusResponses, unknown, ThrowOnError> => (options?.client ?? client).get<AssistantStatusResponses, unknown, ThrowOnError>({ url: '/api/assistant/status', ...options });
 
 /**
- * Assistant Chat
+ * List Threads
  */
-export const assistantChat = <ThrowOnError extends boolean = false>(options: Options<AssistantChatData, ThrowOnError>): RequestResult<AssistantChatResponses, AssistantChatErrors, ThrowOnError> => (options.client ?? client).post<AssistantChatResponses, AssistantChatErrors, ThrowOnError>({
-    url: '/api/assistant/chat',
+export const listThreads = <ThrowOnError extends boolean = false>(options?: Options<ListThreadsData, ThrowOnError>): RequestResult<ListThreadsResponses, unknown, ThrowOnError> => (options?.client ?? client).get<ListThreadsResponses, unknown, ThrowOnError>({ url: '/api/assistant/threads', ...options });
+
+/**
+ * Create Thread
+ */
+export const createThread = <ThrowOnError extends boolean = false>(options?: Options<CreateThreadData, ThrowOnError>): RequestResult<CreateThreadResponses, unknown, ThrowOnError> => (options?.client ?? client).post<CreateThreadResponses, unknown, ThrowOnError>({ url: '/api/assistant/threads', ...options });
+
+/**
+ * Thread Messages
+ */
+export const threadMessages = <ThrowOnError extends boolean = false>(options: Options<ThreadMessagesData, ThrowOnError>): RequestResult<ThreadMessagesResponses, ThreadMessagesErrors, ThrowOnError> => (options.client ?? client).get<ThreadMessagesResponses, ThreadMessagesErrors, ThrowOnError>({ url: '/api/assistant/threads/{thread_id}/messages', ...options });
+
+/**
+ * Delete Thread
+ */
+export const deleteThread = <ThrowOnError extends boolean = false>(options: Options<DeleteThreadData, ThrowOnError>): RequestResult<DeleteThreadResponses, DeleteThreadErrors, ThrowOnError> => (options.client ?? client).delete<DeleteThreadResponses, DeleteThreadErrors, ThrowOnError>({ url: '/api/assistant/threads/{thread_id}', ...options });
+
+/**
+ * Rename Thread
+ */
+export const renameThread = <ThrowOnError extends boolean = false>(options: Options<RenameThreadData, ThrowOnError>): RequestResult<RenameThreadResponses, RenameThreadErrors, ThrowOnError> => (options.client ?? client).patch<RenameThreadResponses, RenameThreadErrors, ThrowOnError>({
+    url: '/api/assistant/threads/{thread_id}',
     ...options,
     headers: {
         'Content-Type': 'application/json',
         ...options.headers
     }
 });
+
+/**
+ * Assistant Chat
+ *
+ * Body: the AI SDK chat request plus `threadId`. Streams the reply.
+ */
+export const assistantChat = <ThrowOnError extends boolean = false>(options?: Options<AssistantChatData, ThrowOnError>): RequestResult<AssistantChatResponses, unknown, ThrowOnError> => (options?.client ?? client).post<AssistantChatResponses, unknown, ThrowOnError>({ url: '/api/assistant/chat', ...options });

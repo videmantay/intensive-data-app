@@ -96,6 +96,10 @@ const messageGroupBy = groupPartByType({
   reasoning: ["group-chainOfThought", "group-reasoning"],
   "tool-call": ["group-chainOfThought", "group-tool"],
   "standalone-tool-call": [],
+  // FieldOps: charts and dashboard confirmations show in the message, not in the
+  // collapsed "tool calls" group (see components/assistant/ToolUI.tsx)
+  "tool-call:make_chart": [],
+  "tool-call:add_chart_to_dashboard": [],
 });
 
 type ThreadGroupKey =

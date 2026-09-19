@@ -21,6 +21,12 @@ class Settings(BaseSettings):
 
     sqlite_path: Path = BACKEND_DIR / "data" / "app.db"
 
+    # Signs the session cookie. Set SECRET_KEY in production; when it's empty a random
+    # key is used, so everyone is signed out whenever the API restarts.
+    secret_key: str = ""
+    session_max_age_seconds: int = 14 * 24 * 3600
+    session_https_only: bool = False  # set true when served over HTTPS
+
     # Assistant (OpenAI). Set OPENAI_API_KEY in backend/.env; the model name is
     # whatever your OpenAI account has access to.
     openai_api_key: str = ""

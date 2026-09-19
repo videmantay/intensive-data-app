@@ -3,8 +3,8 @@
 import { type DefaultError, type InfiniteData, infiniteQueryOptions, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen';
-import { assistantChat, assistantStatus, createItem, deleteItem, getItem, health, itemQuantityChart, itemTotalsByCategory, listItems, type Options, updateItem } from '../sdk.gen';
-import type { AssistantChatData, AssistantChatError, AssistantStatusData, AssistantStatusResponse, CreateItemData, CreateItemError, CreateItemResponse, DeleteItemData, DeleteItemError, DeleteItemResponse, GetItemData, GetItemError, GetItemResponse, HealthData, HealthResponse, ItemQuantityChartData, ItemQuantityChartResponse, ItemTotalsByCategoryData, ItemTotalsByCategoryResponse, ListItemsData, ListItemsError, ListItemsResponse, UpdateItemData, UpdateItemError, UpdateItemResponse } from '../types.gen';
+import { assistantChat, assistantStatus, createDashboard, createItem, createThread, createWidget, currentUser, deleteDashboard, deleteItem, deleteThread, deleteWidget, dimensionValues, getDashboard, getItem, health, itemQuantityChart, itemTotalsByCategory, listDashboards, listDatasets, listItems, listThreads, login, logout, type Options, previewWidget, renameDashboard, renameThread, saveDashboardLayout, threadMessages, updateItem, updateWidget, widgetData } from '../sdk.gen';
+import type { AssistantChatData, AssistantStatusData, AssistantStatusResponse, CreateDashboardData, CreateDashboardError, CreateDashboardResponse, CreateItemData, CreateItemError, CreateItemResponse, CreateThreadData, CreateThreadResponse, CreateWidgetData, CreateWidgetError, CreateWidgetResponse, CurrentUserData, CurrentUserResponse, DeleteDashboardData, DeleteDashboardError, DeleteDashboardResponse, DeleteItemData, DeleteItemError, DeleteItemResponse, DeleteThreadData, DeleteThreadError, DeleteThreadResponse, DeleteWidgetData, DeleteWidgetError, DeleteWidgetResponse, DimensionValuesData, DimensionValuesError, DimensionValuesResponse, GetDashboardData, GetDashboardError, GetDashboardResponse, GetItemData, GetItemError, GetItemResponse, HealthData, HealthResponse, ItemQuantityChartData, ItemQuantityChartResponse, ItemTotalsByCategoryData, ItemTotalsByCategoryResponse, ListDashboardsData, ListDashboardsResponse, ListDatasetsData, ListDatasetsResponse, ListItemsData, ListItemsError, ListItemsResponse, ListThreadsData, ListThreadsResponse, LoginData, LoginError, LoginResponse, LogoutData, LogoutResponse, PreviewWidgetData, PreviewWidgetError, PreviewWidgetResponse, RenameDashboardData, RenameDashboardError, RenameDashboardResponse, RenameThreadData, RenameThreadError, RenameThreadResponse, SaveDashboardLayoutData, SaveDashboardLayoutError, SaveDashboardLayoutResponse, ThreadMessagesData, ThreadMessagesError, ThreadMessagesResponse, UpdateItemData, UpdateItemError, UpdateItemResponse, UpdateWidgetData, UpdateWidgetError, UpdateWidgetResponse, WidgetDataData, WidgetDataError, WidgetDataResponse } from '../types.gen';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -55,6 +55,58 @@ export const healthOptions = (options?: Options<HealthData>) => queryOptions<Hea
         return data;
     },
     queryKey: healthQueryKey(options)
+});
+
+/**
+ * Login
+ */
+export const loginMutation = (options?: Partial<Options<LoginData>>): UseMutationOptions<LoginResponse, LoginError, Options<LoginData>> => {
+    const mutationOptions: UseMutationOptions<LoginResponse, LoginError, Options<LoginData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await login({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Logout
+ */
+export const logoutMutation = (options?: Partial<Options<LogoutData>>): UseMutationOptions<LogoutResponse, DefaultError, Options<LogoutData>> => {
+    const mutationOptions: UseMutationOptions<LogoutResponse, DefaultError, Options<LogoutData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await logout({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const currentUserQueryKey = (options?: Options<CurrentUserData>) => createQueryKey('currentUser', options);
+
+/**
+ * Current User
+ */
+export const currentUserOptions = (options?: Options<CurrentUserData>) => queryOptions<CurrentUserResponse, DefaultError, CurrentUserResponse, ReturnType<typeof currentUserQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await currentUser({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: currentUserQueryKey(options)
 });
 
 export const listItemsQueryKey = (options?: Options<ListItemsData>) => createQueryKey('listItems', options);
@@ -239,6 +291,232 @@ export const updateItemMutation = (options?: Partial<Options<UpdateItemData>>): 
     return mutationOptions;
 };
 
+export const listDatasetsQueryKey = (options?: Options<ListDatasetsData>) => createQueryKey('listDatasets', options);
+
+/**
+ * List Datasets
+ */
+export const listDatasetsOptions = (options?: Options<ListDatasetsData>) => queryOptions<ListDatasetsResponse, DefaultError, ListDatasetsResponse, ReturnType<typeof listDatasetsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await listDatasets({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listDatasetsQueryKey(options)
+});
+
+export const dimensionValuesQueryKey = (options: Options<DimensionValuesData>) => createQueryKey('dimensionValues', options);
+
+/**
+ * Dimension Values
+ */
+export const dimensionValuesOptions = (options: Options<DimensionValuesData>) => queryOptions<DimensionValuesResponse, DimensionValuesError, DimensionValuesResponse, ReturnType<typeof dimensionValuesQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await dimensionValues({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: dimensionValuesQueryKey(options)
+});
+
+/**
+ * Preview Widget
+ */
+export const previewWidgetMutation = (options?: Partial<Options<PreviewWidgetData>>): UseMutationOptions<PreviewWidgetResponse, PreviewWidgetError, Options<PreviewWidgetData>> => {
+    const mutationOptions: UseMutationOptions<PreviewWidgetResponse, PreviewWidgetError, Options<PreviewWidgetData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await previewWidget({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const listDashboardsQueryKey = (options?: Options<ListDashboardsData>) => createQueryKey('listDashboards', options);
+
+/**
+ * List Dashboards
+ */
+export const listDashboardsOptions = (options?: Options<ListDashboardsData>) => queryOptions<ListDashboardsResponse, DefaultError, ListDashboardsResponse, ReturnType<typeof listDashboardsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await listDashboards({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listDashboardsQueryKey(options)
+});
+
+/**
+ * Create Dashboard
+ */
+export const createDashboardMutation = (options?: Partial<Options<CreateDashboardData>>): UseMutationOptions<CreateDashboardResponse, CreateDashboardError, Options<CreateDashboardData>> => {
+    const mutationOptions: UseMutationOptions<CreateDashboardResponse, CreateDashboardError, Options<CreateDashboardData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await createDashboard({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Delete Dashboard
+ */
+export const deleteDashboardMutation = (options?: Partial<Options<DeleteDashboardData>>): UseMutationOptions<DeleteDashboardResponse, DeleteDashboardError, Options<DeleteDashboardData>> => {
+    const mutationOptions: UseMutationOptions<DeleteDashboardResponse, DeleteDashboardError, Options<DeleteDashboardData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await deleteDashboard({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const getDashboardQueryKey = (options: Options<GetDashboardData>) => createQueryKey('getDashboard', options);
+
+/**
+ * Get Dashboard
+ */
+export const getDashboardOptions = (options: Options<GetDashboardData>) => queryOptions<GetDashboardResponse, GetDashboardError, GetDashboardResponse, ReturnType<typeof getDashboardQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getDashboard({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getDashboardQueryKey(options)
+});
+
+/**
+ * Rename Dashboard
+ */
+export const renameDashboardMutation = (options?: Partial<Options<RenameDashboardData>>): UseMutationOptions<RenameDashboardResponse, RenameDashboardError, Options<RenameDashboardData>> => {
+    const mutationOptions: UseMutationOptions<RenameDashboardResponse, RenameDashboardError, Options<RenameDashboardData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await renameDashboard({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Save Dashboard Layout
+ */
+export const saveDashboardLayoutMutation = (options?: Partial<Options<SaveDashboardLayoutData>>): UseMutationOptions<SaveDashboardLayoutResponse, SaveDashboardLayoutError, Options<SaveDashboardLayoutData>> => {
+    const mutationOptions: UseMutationOptions<SaveDashboardLayoutResponse, SaveDashboardLayoutError, Options<SaveDashboardLayoutData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await saveDashboardLayout({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Create Widget
+ */
+export const createWidgetMutation = (options?: Partial<Options<CreateWidgetData>>): UseMutationOptions<CreateWidgetResponse, CreateWidgetError, Options<CreateWidgetData>> => {
+    const mutationOptions: UseMutationOptions<CreateWidgetResponse, CreateWidgetError, Options<CreateWidgetData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await createWidget({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Delete Widget
+ */
+export const deleteWidgetMutation = (options?: Partial<Options<DeleteWidgetData>>): UseMutationOptions<DeleteWidgetResponse, DeleteWidgetError, Options<DeleteWidgetData>> => {
+    const mutationOptions: UseMutationOptions<DeleteWidgetResponse, DeleteWidgetError, Options<DeleteWidgetData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await deleteWidget({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Update Widget
+ */
+export const updateWidgetMutation = (options?: Partial<Options<UpdateWidgetData>>): UseMutationOptions<UpdateWidgetResponse, UpdateWidgetError, Options<UpdateWidgetData>> => {
+    const mutationOptions: UseMutationOptions<UpdateWidgetResponse, UpdateWidgetError, Options<UpdateWidgetData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await updateWidget({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const widgetDataQueryKey = (options: Options<WidgetDataData>) => createQueryKey('widgetData', options);
+
+/**
+ * Widget Data
+ */
+export const widgetDataOptions = (options: Options<WidgetDataData>) => queryOptions<WidgetDataResponse, WidgetDataError, WidgetDataResponse, ReturnType<typeof widgetDataQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await widgetData({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: widgetDataQueryKey(options)
+});
+
 export const assistantStatusQueryKey = (options?: Options<AssistantStatusData>) => createQueryKey('assistantStatus', options);
 
 /**
@@ -259,11 +537,100 @@ export const assistantStatusOptions = (options?: Options<AssistantStatusData>) =
     queryKey: assistantStatusQueryKey(options)
 });
 
+export const listThreadsQueryKey = (options?: Options<ListThreadsData>) => createQueryKey('listThreads', options);
+
+/**
+ * List Threads
+ */
+export const listThreadsOptions = (options?: Options<ListThreadsData>) => queryOptions<ListThreadsResponse, DefaultError, ListThreadsResponse, ReturnType<typeof listThreadsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await listThreads({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listThreadsQueryKey(options)
+});
+
+/**
+ * Create Thread
+ */
+export const createThreadMutation = (options?: Partial<Options<CreateThreadData>>): UseMutationOptions<CreateThreadResponse, DefaultError, Options<CreateThreadData>> => {
+    const mutationOptions: UseMutationOptions<CreateThreadResponse, DefaultError, Options<CreateThreadData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await createThread({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const threadMessagesQueryKey = (options: Options<ThreadMessagesData>) => createQueryKey('threadMessages', options);
+
+/**
+ * Thread Messages
+ */
+export const threadMessagesOptions = (options: Options<ThreadMessagesData>) => queryOptions<ThreadMessagesResponse, ThreadMessagesError, ThreadMessagesResponse, ReturnType<typeof threadMessagesQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await threadMessages({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: threadMessagesQueryKey(options)
+});
+
+/**
+ * Delete Thread
+ */
+export const deleteThreadMutation = (options?: Partial<Options<DeleteThreadData>>): UseMutationOptions<DeleteThreadResponse, DeleteThreadError, Options<DeleteThreadData>> => {
+    const mutationOptions: UseMutationOptions<DeleteThreadResponse, DeleteThreadError, Options<DeleteThreadData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await deleteThread({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Rename Thread
+ */
+export const renameThreadMutation = (options?: Partial<Options<RenameThreadData>>): UseMutationOptions<RenameThreadResponse, RenameThreadError, Options<RenameThreadData>> => {
+    const mutationOptions: UseMutationOptions<RenameThreadResponse, RenameThreadError, Options<RenameThreadData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await renameThread({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
 /**
  * Assistant Chat
+ *
+ * Body: the AI SDK chat request plus `threadId`. Streams the reply.
  */
-export const assistantChatMutation = (options?: Partial<Options<AssistantChatData>>): UseMutationOptions<unknown, AssistantChatError, Options<AssistantChatData>> => {
-    const mutationOptions: UseMutationOptions<unknown, AssistantChatError, Options<AssistantChatData>> = {
+export const assistantChatMutation = (options?: Partial<Options<AssistantChatData>>): UseMutationOptions<unknown, DefaultError, Options<AssistantChatData>> => {
+    const mutationOptions: UseMutationOptions<unknown, DefaultError, Options<AssistantChatData>> = {
         mutationFn: async (fnOptions) => {
             const { data } = await assistantChat({
                 ...options,
