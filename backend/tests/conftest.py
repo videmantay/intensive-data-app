@@ -1,7 +1,8 @@
 """Shared fixtures. Every test gets a fresh SQLite file, migrated at startup.
 
-Most endpoints need a signed-in user, so `client` is signed in as "alice".
-`make_client` builds more clients: a second user, or custom settings.
+Login is bypassed for the demo (app/auth/deps.py), so `anon_client` is a working client
+that acts as the demo user. `client` signs in as "alice" and `make_client("bob")` gives a
+second user, which is how the per-user ownership tests stay honest.
 """
 
 from contextlib import ExitStack

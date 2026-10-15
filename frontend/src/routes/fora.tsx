@@ -1,5 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router'
+import type { CustomCellEditorProps } from 'ag-grid-react'
+import type { CellEditRequestEvent, ColDef, ICellRendererParams } from 'ag-grid-community'
 import {
+  ChevronDown,
   CircleCheck,
   Minus,
   MoveRight,
@@ -12,17 +15,14 @@ import {
   TrendingUp,
   type LucideIcon,
 } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { DataGrid } from '@/components/DataGrid'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
 import { Switch } from '@/components/ui/switch'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Textarea } from '@/components/ui/textarea'
 
 export const Route = createFileRoute('/fora')({
   component: ForaInputPage,
@@ -87,20 +87,189 @@ function RiskDot({ color }: { color: string }) {
 const riskMeta = (value: Risk) => RISK_OPTIONS.find((r) => r.value === value)!
 const trendMeta = (value: Trend) => TREND_OPTIONS.find((t) => t.value === value)!
 
+/** What a dropdown cell shows: its value (or a "Select" hint) and a chevron, like an Excel list cell. */
+function SelectCell({ children }: { children?: ReactNode }) {
+  return (
+    <span className="flex h-full items-center justify-between gap-2">
+      {children ?? <span className="text-muted-foreground">Select</span>}
+      <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
+    </span>
+  )
+}
+
+/**
+ * A column that edits through a dropdown of `values`. Columns without one take free text.
+ * `label` turns a stored value into what the user sees (e.g. 'amber' -> 'Amber').
+ */
+function dropdown(values: readonly string[], label: (v: string) => string = (v) => v): ColDef<FormRow> {
+  return {
+    cellEditor: 'agSelectCellEditor',
+    cellEditorParams: { values: ['', ...values], formatValue: (v: string) => (v ? label(v) : '—') },
+    singleClickEdit: true,
+    valueFormatter: (p) => (p.value ? label(p.value) : ''),
+  }
+}
+
+interface ListOption {
+  value: string
+  label: string
+  icon: ReactNode
+}
+
+/**
+ * Dropdown editor that shows an icon next to each choice. AG Grid's built-in select editor
+ * can only show text. Arrow keys move the choice, Enter or a click picks it, Escape cancels.
+ */
+function IconListEditor({
+  value,
+  onValueChange,
+  stopEditing,
+  options,
+}: CustomCellEditorProps<FormRow, string> & { options: ListOption[] }) {
+  const choices: ListOption[] = [{ value: '', label: '—', icon: null }, ...options]
+  const listRef = useRef<HTMLDivElement>(null)
+  useEffect(() => listRef.current?.focus(), [])
+
+  const move = (step: number) => {
+    const i = choices.findIndex((o) => o.value === (value ?? ''))
+    const next = choices[Math.min(Math.max(i + step, 0), choices.length - 1)]
+    onValueChange(next.value)
+  }
+
+  return (
+    <div
+      ref={listRef}
+      tabIndex={0}
+      role="listbox"
+      className="min-w-40 rounded-md border bg-popover p-1 text-popover-foreground shadow-md outline-none"
+      onKeyDown={(e) => {
+        if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+          e.preventDefault()
+          move(e.key === 'ArrowDown' ? 1 : -1)
+        }
+      }}
+    >
+      {choices.map((o) => (
+        <div
+          key={o.value}
+          role="option"
+          aria-selected={o.value === (value ?? '')}
+          className="flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-accent aria-selected:bg-accent"
+          onClick={() => {
+            onValueChange(o.value)
+            stopEditing()
+          }}
+        >
+          {o.icon}
+          <span className={o.value ? undefined : 'text-muted-foreground'}>{o.label}</span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+/** Like `dropdown`, but each choice carries an icon, both in the list and in the cell. */
+function iconDropdown(options: ListOption[]): ColDef<FormRow> {
+  const find = (v: string) => options.find((o) => o.value === v)
+  return {
+    cellEditor: IconListEditor,
+    cellEditorPopup: true,
+    cellEditorParams: { options },
+    singleClickEdit: true,
+    valueFormatter: (p) => find(p.value)?.label ?? '',
+    cellRenderer: (p: ICellRendererParams<FormRow>) => {
+      const o = find(p.value)
+      return (
+        <SelectCell>
+          {o && (
+            <span className="flex items-center gap-2">
+              {o.icon}
+              {o.label}
+            </span>
+          )}
+        </SelectCell>
+      )
+    },
+  }
+}
+
+const RISK_LIST: ListOption[] = RISK_OPTIONS.map((o) => ({ ...o, icon: <RiskDot color={o.color} /> }))
+const TREND_LIST: ListOption[] = TREND_OPTIONS.map((o) => ({
+  ...o,
+  icon: <o.Icon className="h-4 w-4" style={{ color: o.color }} />,
+}))
+
 function ForaInputPage() {
   const [rows, setRows] = useState<FormRow[]>(() => [emptyRow(), emptyRow(), emptyRow(), emptyRow()])
   const [approveMode, setApproveMode] = useState(false)
   const [showHistory, setShowHistory] = useState(false)
   const [status, setStatus] = useState<{ type: 'ok' | 'warn'; text: string } | null>(null)
 
-  const update = <K extends keyof FormRow>(id: string, field: K, value: FormRow[K]) =>
-    setRows((rs) => rs.map((r) => (r.id === id ? { ...r, [field]: value } : r)))
-
   const addRow = () => setRows((rs) => [...rs, emptyRow()])
   const removeRow = (id: string) => setRows((rs) => (rs.length > 1 ? rs.filter((r) => r.id !== id) : rs))
   const removeLast = () => setRows((rs) => (rs.length > 1 ? rs.slice(0, -1) : rs))
 
   const rowFilled = (r: FormRow) => r.statusType && r.location && r.riskColor && r.trend
+
+  // The grid never edits rows itself (readOnlyEdit); apply each edit to local state.
+  // TODO: send to the backend once the FORA endpoints exist.
+  const handleCellEdit = (event: CellEditRequestEvent<FormRow>) => {
+    const field = event.colDef.field
+    if (!field || !event.data) return
+    const id = event.data.id
+    setRows((rs) => rs.map((r) => (r.id === id ? { ...r, [field]: event.newValue ?? '' } : r)))
+  }
+
+  const columns: ColDef<FormRow>[] = [
+    {
+      field: 'statusType',
+      headerName: 'Status Type',
+      minWidth: 160,
+      ...dropdown(STATUS_OPTIONS),
+      cellRenderer: (p: ICellRendererParams<FormRow>) => <SelectCell>{p.valueFormatted || undefined}</SelectCell>,
+    },
+    {
+      field: 'location',
+      minWidth: 170,
+      ...dropdown(LOCATION_OPTIONS),
+      cellRenderer: (p: ICellRendererParams<FormRow>) => <SelectCell>{p.valueFormatted || undefined}</SelectCell>,
+    },
+    {
+      field: 'riskColor',
+      headerName: 'Risk Color',
+      minWidth: 140,
+      ...iconDropdown(RISK_LIST),
+    },
+    {
+      field: 'trend',
+      minWidth: 150,
+      ...iconDropdown(TREND_LIST),
+    },
+    // Free-text cells: type to start editing, as in Excel.
+    { field: 'comments', flex: 2, minWidth: 220, cellEditor: 'agLargeTextCellEditor', cellEditorPopup: true },
+    { field: 'user', minWidth: 130 },
+    { field: 'approved', headerName: 'Approve', width: 100, hide: !approveMode },
+    {
+      headerName: '',
+      width: 60,
+      editable: false,
+      sortable: false,
+      filter: false,
+      resizable: false,
+      cellRenderer: (p: ICellRendererParams<FormRow>) => (
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 text-muted-foreground hover:text-red-600"
+          onClick={() => p.data && removeRow(p.data.id)}
+          disabled={rows.length <= 1}
+          aria-label="Delete row"
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
+      ),
+    },
+  ]
 
   const handleSubmit = () => {
     const ready = rows.filter(rowFilled)
@@ -158,165 +327,22 @@ function ForaInputPage() {
         </span>
       </div>
 
-      {/* Data table */}
-      <Card className="mt-4 overflow-hidden">
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-muted hover:bg-muted">
-                  <TableHead className="min-w-[150px]">Status Type</TableHead>
-                  <TableHead className="min-w-[150px]">Location</TableHead>
-                  <TableHead className="min-w-[140px]">Risk Color</TableHead>
-                  <TableHead className="min-w-[150px]">Trend</TableHead>
-                  <TableHead className="min-w-[220px]">Comments</TableHead>
-                  <TableHead className="min-w-[130px]">User</TableHead>
-                  {approveMode && <TableHead className="w-[90px] text-center">Approve</TableHead>}
-                  <TableHead className="w-[52px]" />
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {rows.map((row) => {
-                  const rm = row.riskColor ? riskMeta(row.riskColor) : undefined
-                  const tm = row.trend ? trendMeta(row.trend) : undefined
-                  return (
-                    <TableRow key={row.id}>
-                      {/* Status Type */}
-                      <TableCell>
-                        <Select value={row.statusType} onValueChange={(v) => update(row.id, 'statusType', v)}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {STATUS_OPTIONS.map((o) => (
-                              <SelectItem key={o} value={o}>
-                                {o}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </TableCell>
-
-                      {/* Location */}
-                      <TableCell>
-                        <Select value={row.location} onValueChange={(v) => update(row.id, 'location', v)}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {LOCATION_OPTIONS.map((o) => (
-                              <SelectItem key={o} value={o}>
-                                {o}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </TableCell>
-
-                      {/* Risk Color */}
-                      <TableCell>
-                        <Select value={row.riskColor} onValueChange={(v: Risk) => update(row.id, 'riskColor', v)}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select">
-                              {rm && (
-                                <span className="flex items-center gap-2">
-                                  <RiskDot color={rm.color} />
-                                  {rm.label}
-                                </span>
-                              )}
-                            </SelectValue>
-                          </SelectTrigger>
-                          <SelectContent>
-                            {RISK_OPTIONS.map((o) => (
-                              <SelectItem key={o.value} value={o.value}>
-                                <span className="flex items-center gap-2">
-                                  <RiskDot color={o.color} />
-                                  {o.label}
-                                </span>
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </TableCell>
-
-                      {/* Trend */}
-                      <TableCell>
-                        <Select value={row.trend} onValueChange={(v: Trend) => update(row.id, 'trend', v)}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select">
-                              {tm && (
-                                <span className="flex items-center gap-2">
-                                  <tm.Icon className="h-4 w-4" style={{ color: tm.color }} />
-                                  {tm.label}
-                                </span>
-                              )}
-                            </SelectValue>
-                          </SelectTrigger>
-                          <SelectContent>
-                            {TREND_OPTIONS.map((o) => (
-                              <SelectItem key={o.value} value={o.value}>
-                                <span className="flex items-center gap-2">
-                                  <o.Icon className="h-4 w-4" style={{ color: o.color }} />
-                                  {o.label}
-                                </span>
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </TableCell>
-
-                      {/* Comments */}
-                      <TableCell>
-                        <Textarea
-                          value={row.comments}
-                          onChange={(e) => update(row.id, 'comments', e.target.value)}
-                          placeholder="Add a note"
-                          rows={1}
-                          className="min-h-9 resize-none"
-                        />
-                      </TableCell>
-
-                      {/* User */}
-                      <TableCell>
-                        <Input
-                          value={row.user}
-                          onChange={(e) => update(row.id, 'user', e.target.value)}
-                          placeholder="username"
-                        />
-                      </TableCell>
-
-                      {/* Approve */}
-                      {approveMode && (
-                        <TableCell className="text-center">
-                          <Checkbox
-                            checked={row.approved}
-                            onCheckedChange={(v) => update(row.id, 'approved', Boolean(v))}
-                            aria-label="Approve record"
-                          />
-                        </TableCell>
-                      )}
-
-                      {/* Delete */}
-                      <TableCell>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-muted-foreground hover:text-red-600"
-                          onClick={() => removeRow(row.id)}
-                          disabled={rows.length <= 1}
-                          aria-label="Delete row"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  )
-                })}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Data grid: click a list cell to pick from its dropdown; type into a text cell to edit it */}
+      <div className="mt-4">
+        <DataGrid<FormRow>
+          height="auto"
+          domLayout="autoHeight"
+          rowData={rows}
+          columnDefs={columns}
+          getRowId={(p) => p.data.id}
+          onCellEditRequest={handleCellEdit}
+          defaultColDef={{ editable: true, sortable: false, filter: false, flex: 1 }}
+          enterNavigatesVertically
+          enterNavigatesVerticallyAfterEdit
+          stopEditingWhenCellsLoseFocus
+          popupParent={document.body}
+        />
+      </div>
 
       {/* Submit + status */}
       <div className="mt-4 flex flex-wrap items-center justify-end gap-3">

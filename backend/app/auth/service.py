@@ -1,5 +1,7 @@
 """Users and password checks."""
 
+import secrets
+
 from pwdlib import PasswordHash
 from sqlmodel import Session, select
 
@@ -29,6 +31,20 @@ def create_user(session: Session, username: str, password: str, display_name: st
     user = User(username=username, display_name=display_name or username, password_hash=hash_password(password))
     session.add(user)
     session.flush()
+    return user
+
+
+DEMO_USERNAME = "demo"
+
+
+def demo_user(session: Session) -> User:
+    """The user anonymous requests act as while login is bypassed (see deps.py).
+
+    Created on first use with a random password, so nobody can sign in as it.
+    """
+    user = get_user_by_username(session, DEMO_USERNAME)
+    if user is None:
+        user = create_user(session, DEMO_USERNAME, secrets.token_urlsafe(32), "Demo user")
     return user
 
 

@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router'
 import { MessageSquarePlus, MoreHorizontal, Pencil, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import {
@@ -20,6 +20,10 @@ import {
 import { cn } from '@/lib/utils'
 
 export const Route = createFileRoute('/explore')({
+  // The agent view is hidden for now; the page below still works. Remove this to show it.
+  beforeLoad: () => {
+    throw redirect({ to: '/' })
+  },
   // ?t=12 opens a saved thread; no `t` is a new chat
   validateSearch: (search: Record<string, unknown>): { t?: number } => ({
     t: Number(search.t) > 0 ? Number(search.t) : undefined,

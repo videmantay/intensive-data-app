@@ -13,7 +13,6 @@ A data app with a Python backend and a thin React frontend, built so that most o
 # Terminal 1: API on http://127.0.0.1:8000 (interactive docs at /docs)
 cd backend
 uv sync
-uv run python -m app.auth.create_user yourname   # once: there is no sign-up page
 uv run fastapi dev app/main.py
 
 # Terminal 2: UI on http://localhost:5173 (forwards /api to the backend)
@@ -21,6 +20,11 @@ cd frontend
 npm install
 npm run dev
 ```
+
+On Windows, App Control (or Smart App Control) may block the `.exe` launchers uv puts in
+`backend/.venv/Scripts/`, with `Failed to spawn: fastapi ... os error 4551` or a
+`uv trampoline` error. Run the module instead — same thing, no launcher:
+`uv run python -m fastapi dev app/main.py`, `uv run python -m pytest`.
 
 ## How it fits together
 
@@ -39,12 +43,20 @@ routes/items.tsx ── useQuery ──────►  items/router.py ──�
 
 See [CLAUDE.md](CLAUDE.md) for the step-by-step recipe for adding a feature.
 
-## Sign-in
+## Sign-in (bypassed for the demo)
 
-Every page needs a signed-in user; dashboards and chats belong to that user. Accounts are created from
-the command line (`uv run python -m app.auth.create_user <name>`, which also resets a password). The
-session is a signed cookie: set `SECRET_KEY` in `backend/.env` so sign-ins survive a restart, and
-`SESSION_HTTPS_ONLY=true` when serving over HTTPS.
+There is no login page: the API treats any request without a session as a built-in **demo
+user**, created automatically on first use. Dashboards and chats belong to that user.
+
+The machinery is still there and still works — `app/auth/` hashes passwords, the session
+cookie is signed, and data is scoped per user. To require real logins again:
+
+1. Backend: make `require_user` in `app/auth/deps.py` raise 401 instead of returning
+   `demo_user(session)` (git history has the original).
+2. Frontend: drop the redirect in `src/routes/login.tsx` and restore the `beforeLoad`
+   guard, the user name and the sign-out button in `src/routes/__root.tsx`.
+3. Create accounts with `uv run python -m app.auth.create_user <name>`, and set
+   `SECRET_KEY` in `backend/.env` so sessions survive a restart.
 
 ## Dashboards and Explore
 
@@ -60,6 +72,9 @@ Every widget, whether built by hand or by the assistant, is a **`WidgetSpec`**: 
 measures, filters and a chart type. It never contains SQL. The backend turns it into a SQLAlchemy query
 using only the fields each feature registers in `app/<feature>/dataset.py` (see `app/analytics/`), so
 pinned charts re-run on current data (a "last week" filter keeps meaning last week).
+
+**To make another table chartable**, register it as a dataset. [DEV.md](DEV.md) explains how
+specs, datasets and dashboards fit together, and walks through adding one.
 
 ```
 Explore chat ─► assistant/agent.py (pydantic-ai) ─► tools: analytics/tools.py, dashboards/tools.py

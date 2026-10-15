@@ -27,7 +27,8 @@ def test_datasets_catalog(client, anon_client):
     assert items["name"] == "items"
     assert {d["name"]: d["kind"] for d in items["dimensions"]}["created_at"] == "temporal"
     assert "total_quantity" in [m["name"] for m in items["measures"]]
-    assert anon_client.get("/api/analytics/datasets").status_code == 401
+    # Login is bypassed for the demo, so this works without signing in too
+    assert anon_client.get("/api/analytics/datasets").status_code == 200
 
 
 def test_bar_by_category_is_sorted_and_recommended(client):

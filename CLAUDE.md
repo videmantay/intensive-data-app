@@ -6,6 +6,11 @@ This app replaces a Streamlit app. Its maintainers are mainly Python developers,
 - **Choose boring, popular solutions.** Don't add frontend state libraries, custom hooks frameworks, or clever abstractions. Match the existing examples.
 - **Use `items` as the reference feature.** Copy its structure for new features.
 
+**Before changing anything, read [TODO.md](TODO.md)** — known bugs, gaps and pending
+decisions live there. Update it as part of the work, and move finished items to
+[DONE.md](DONE.md) (dated, newest first) so TODO.md stays short. Don't read DONE.md up front;
+search it when you need the history of a decision.
+
 ## Adding a feature (e.g. "orders")
 
 1. **Models**: `backend/app/orders/models.py` holds the SQLModel classes — one `table=True` model plus the API shapes (`OrderBase`, `Order`, `OrderCreate`, `OrderUpdate`, `OrderPublic`). Copy `app/items/models.py`. These class names become the generated frontend type names.
@@ -13,7 +18,7 @@ This app replaces a Streamlit app. Its maintainers are mainly Python developers,
 3. **Service**: `backend/app/orders/service.py` holds plain functions that take a `Session` and run SQLModel `select()` queries. All data access and business logic goes here. Data that belongs to a user takes a `user_id` and filters by owner in every function (see `app/dashboards/service.py`).
    **Dataset** (to make it explorable): `backend/app/orders/dataset.py` declares the dimensions and measures people may chart, and `app/analytics/registry.py` lists it. Copy `app/items/dataset.py`. The widget builder and the assistant can then use it; nothing else is needed.
 4. **Charts** (optional): `backend/app/orders/charts.py` holds functions that take a `Session` and return a Plotly `Figure` (use `plotly.express` + pandas).
-5. **Router**: in `backend/app/orders/router.py`, keep endpoints thin, return charts with `figure_response(fig)`, and include the router in `app/main.py` with `dependencies=signed_in` (every route except health and sign-in needs a user). An endpoint that needs to know who is asking takes `user: CurrentUser` (`app/auth/deps.py`).
+5. **Router**: in `backend/app/orders/router.py`, keep endpoints thin, return charts with `figure_response(fig)`, and include the router in `app/main.py` with `dependencies=signed_in`. An endpoint that needs to know whose data it is takes `user: CurrentUser` (`app/auth/deps.py`). **Login is bypassed for the demo**: a request with no session acts as a built-in demo user, so `CurrentUser` is always present. Per-user scoping still applies, so keep filtering by `user_id` in services.
    The endpoint **function name becomes the frontend function name** (`list_orders` → `listOrdersOptions`), so it must be unique app-wide.
 6. **Test**: add `backend/tests/test_orders.py` and run `uv run pytest`. Tests get a fresh SQLite file per test and migrations run for them, so seeded rows are present. The `client` fixture is signed in as "alice"; `make_client("bob")` gives a second user (`tests/conftest.py`).
 7. **Regenerate the client**: from `frontend/`, run `npm run gen:api`. Never hand-edit `src/api/generated/`.
@@ -53,7 +58,12 @@ This app replaces a Streamlit app. Its maintainers are mainly Python developers,
 | frontend | `npm run gen:api` | Regenerate the API client from the backend |
 | frontend | `npm run build` / `npm run lint` | Type-check + build, lint |
 
+If Windows App Control blocks `.venv/Scripts/*.exe` (`os error 4551`, or a `uv trampoline`
+error), run the module instead: `uv run python -m fastapi dev app/main.py`, `uv run python -m pytest`.
+
 ## Analytics, dashboards and the assistant
+
+[DEV.md](DEV.md) is the developer-facing explanation of this section; keep it in step when this changes.
 
 Everything chart-shaped shares one **`WidgetSpec`** (`app/analytics/spec.py`): dataset, dimensions (with an optional time grain), measures, filters, and a chart type. It never contains SQL.
 

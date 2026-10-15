@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query'
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router'
 import { useState, type FormEvent } from 'react'
 import { currentUserQueryKey, loginMutation } from '@/api/generated/@tanstack/react-query.gen'
 import { Button } from '@/components/ui/button'
@@ -9,6 +9,11 @@ import { Label } from '@/components/ui/label'
 import { queryClient } from '@/lib/queryClient'
 
 export const Route = createFileRoute('/login')({
+  // Login is bypassed for the demo (see routes/__root.tsx). Remove this redirect to
+  // bring the sign-in page back.
+  beforeLoad: () => {
+    throw redirect({ to: '/' })
+  },
   // ?redirect=/items brings the user back where they were after signing in
   validateSearch: (search: Record<string, unknown>): { redirect?: string } => ({
     redirect: typeof search.redirect === 'string' && search.redirect.startsWith('/') ? search.redirect : undefined,
