@@ -26,6 +26,82 @@
         }
       }
     },
+    "/api/auth/login": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Login",
+        "operationId": "login",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserPublic"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Logout",
+        "operationId": "logout",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          }
+        }
+      }
+    },
+    "/api/auth/me": {
+      "get": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Current User",
+        "operationId": "current_user",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserPublic"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/items": {
       "get": {
         "tags": [
@@ -296,6 +372,565 @@
         }
       }
     },
+    "/api/analytics/datasets": {
+      "get": {
+        "tags": [
+          "analytics"
+        ],
+        "summary": "List Datasets",
+        "operationId": "list_datasets",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DatasetInfo"
+                  },
+                  "type": "array",
+                  "title": "Response List Datasets"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/analytics/datasets/{dataset}/values/{field}": {
+      "get": {
+        "tags": [
+          "analytics"
+        ],
+        "summary": "Dimension Values",
+        "operationId": "dimension_values",
+        "parameters": [
+          {
+            "name": "dataset",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Dataset"
+            }
+          },
+          {
+            "name": "field",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Field"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 100,
+              "default": "",
+              "title": "Search"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "default": 100,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {},
+                  "title": "Response Dimension Values"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/analytics/preview": {
+      "post": {
+        "tags": [
+          "analytics"
+        ],
+        "summary": "Preview Widget",
+        "operationId": "preview_widget",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WidgetSpec"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WidgetResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/dashboards": {
+      "get": {
+        "tags": [
+          "dashboards"
+        ],
+        "summary": "List Dashboards",
+        "operationId": "list_dashboards",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DashboardPublic"
+                  },
+                  "type": "array",
+                  "title": "Response List Dashboards"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "dashboards"
+        ],
+        "summary": "Create Dashboard",
+        "operationId": "create_dashboard",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DashboardCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DashboardPublic"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/dashboards/{dashboard_id}": {
+      "get": {
+        "tags": [
+          "dashboards"
+        ],
+        "summary": "Get Dashboard",
+        "operationId": "get_dashboard",
+        "parameters": [
+          {
+            "name": "dashboard_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Dashboard Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DashboardDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "dashboards"
+        ],
+        "summary": "Rename Dashboard",
+        "operationId": "rename_dashboard",
+        "parameters": [
+          {
+            "name": "dashboard_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Dashboard Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DashboardUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DashboardPublic"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "dashboards"
+        ],
+        "summary": "Delete Dashboard",
+        "operationId": "delete_dashboard",
+        "parameters": [
+          {
+            "name": "dashboard_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Dashboard Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/dashboards/{dashboard_id}/layout": {
+      "put": {
+        "tags": [
+          "dashboards"
+        ],
+        "summary": "Save Dashboard Layout",
+        "operationId": "save_dashboard_layout",
+        "parameters": [
+          {
+            "name": "dashboard_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Dashboard Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/WidgetPosition"
+                },
+                "title": "Positions"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/dashboards/{dashboard_id}/widgets": {
+      "post": {
+        "tags": [
+          "dashboards"
+        ],
+        "summary": "Create Widget",
+        "operationId": "create_widget",
+        "parameters": [
+          {
+            "name": "dashboard_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Dashboard Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WidgetCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WidgetPublic"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/widgets/{widget_id}": {
+      "patch": {
+        "tags": [
+          "dashboards"
+        ],
+        "summary": "Update Widget",
+        "operationId": "update_widget",
+        "parameters": [
+          {
+            "name": "widget_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Widget Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WidgetUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WidgetPublic"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "dashboards"
+        ],
+        "summary": "Delete Widget",
+        "operationId": "delete_widget",
+        "parameters": [
+          {
+            "name": "widget_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Widget Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/widgets/{widget_id}/data": {
+      "get": {
+        "tags": [
+          "dashboards"
+        ],
+        "summary": "Widget Data",
+        "operationId": "widget_data",
+        "parameters": [
+          {
+            "name": "widget_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Widget Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WidgetResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/assistant/status": {
       "get": {
         "tags": [
@@ -318,29 +953,76 @@
         }
       }
     },
-    "/api/assistant/chat": {
-      "post": {
+    "/api/assistant/threads": {
+      "get": {
         "tags": [
           "assistant"
         ],
-        "summary": "Assistant Chat",
-        "operationId": "assistant_chat",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ChatRequest"
-              }
-            }
-          },
-          "required": true
-        },
+        "summary": "List Threads",
+        "operationId": "list_threads",
         "responses": {
           "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ThreadPublic"
+                  },
+                  "type": "array",
+                  "title": "Response List Threads"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "assistant"
+        ],
+        "summary": "Create Thread",
+        "operationId": "create_thread",
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ThreadPublic"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/assistant/threads/{thread_id}/messages": {
+      "get": {
+        "tags": [
+          "assistant"
+        ],
+        "summary": "Thread Messages",
+        "operationId": "thread_messages",
+        "parameters": [
+          {
+            "name": "thread_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Thread Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ThreadMessages"
+                }
               }
             }
           },
@@ -351,6 +1033,111 @@
                 "schema": {
                   "$ref": "#/components/schemas/HTTPValidationError"
                 }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/assistant/threads/{thread_id}": {
+      "patch": {
+        "tags": [
+          "assistant"
+        ],
+        "summary": "Rename Thread",
+        "operationId": "rename_thread",
+        "parameters": [
+          {
+            "name": "thread_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Thread Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ThreadUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ThreadPublic"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "assistant"
+        ],
+        "summary": "Delete Thread",
+        "operationId": "delete_thread",
+        "parameters": [
+          {
+            "name": "thread_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Thread Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/assistant/chat": {
+      "post": {
+        "tags": [
+          "assistant"
+        ],
+        "summary": "Assistant Chat",
+        "description": "Body: the AI SDK chat request plus `threadId`. Streams the reply.",
+        "operationId": "assistant_chat",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
               }
             }
           }
@@ -402,44 +1189,416 @@
         "title": "CategoryTotal",
         "description": "Aggregate row, not a table."
       },
-      "ChatMessage": {
+      "ChartSpec": {
         "properties": {
-          "role": {
+          "type": {
             "type": "string",
             "enum": [
-              "user",
-              "assistant"
+              "bar",
+              "line",
+              "area",
+              "scatter",
+              "histogram",
+              "box",
+              "pie",
+              "donut",
+              "heatmap",
+              "radar",
+              "treemap",
+              "funnel",
+              "kpi",
+              "table"
             ],
-            "title": "Role"
+            "title": "Type",
+            "default": "bar"
           },
-          "content": {
+          "title": {
             "type": "string",
-            "title": "Content"
-          }
-        },
-        "type": "object",
-        "required": [
-          "role",
-          "content"
-        ],
-        "title": "ChatMessage"
-      },
-      "ChatRequest": {
-        "properties": {
-          "messages": {
+            "maxLength": 200,
+            "title": "Title",
+            "default": ""
+          },
+          "x": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "X"
+          },
+          "y": {
             "items": {
-              "$ref": "#/components/schemas/ChatMessage"
+              "type": "string"
             },
             "type": "array",
-            "minItems": 1,
-            "title": "Messages"
+            "title": "Y"
+          },
+          "color": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Color"
+          },
+          "orientation": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "v",
+                  "h"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Orientation"
+          },
+          "stacked": {
+            "type": "boolean",
+            "title": "Stacked",
+            "default": false
+          },
+          "top_n": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 50.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Top N"
+          }
+        },
+        "type": "object",
+        "title": "ChartSpec",
+        "description": "How to draw the result. Empty fields are filled from the query (x = first dimension, y = measures)."
+      },
+      "ColumnInfo": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "kind": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "categorical",
+                  "temporal",
+                  "numeric",
+                  "text"
+                ]
+              },
+              {
+                "type": "string",
+                "const": "measure"
+              }
+            ],
+            "title": "Kind"
           }
         },
         "type": "object",
         "required": [
-          "messages"
+          "name",
+          "label",
+          "kind"
         ],
-        "title": "ChatRequest"
+        "title": "ColumnInfo",
+        "description": "A column in a widget's result rows."
+      },
+      "DashboardCreate": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "DashboardCreate",
+        "description": "A new dashboard."
+      },
+      "DashboardDetail": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "widgets": {
+            "items": {
+              "$ref": "#/components/schemas/WidgetPublic"
+            },
+            "type": "array",
+            "title": "Widgets"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "created_at",
+          "updated_at",
+          "widgets"
+        ],
+        "title": "DashboardDetail",
+        "description": "A dashboard with its widgets."
+      },
+      "DashboardPublic": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "DashboardPublic",
+        "description": "A dashboard, without its widgets."
+      },
+      "DashboardUpdate": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "DashboardUpdate",
+        "description": "Rename a dashboard."
+      },
+      "DatasetInfo": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "dimensions": {
+            "items": {
+              "$ref": "#/components/schemas/DimensionInfo"
+            },
+            "type": "array",
+            "title": "Dimensions"
+          },
+          "measures": {
+            "items": {
+              "$ref": "#/components/schemas/MeasureInfo"
+            },
+            "type": "array",
+            "title": "Measures"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "label",
+          "description",
+          "dimensions",
+          "measures"
+        ],
+        "title": "DatasetInfo",
+        "description": "A dataset the builder and the assistant can query."
+      },
+      "DimensionInfo": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "categorical",
+              "temporal",
+              "numeric",
+              "text"
+            ],
+            "title": "Kind"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "label",
+          "kind"
+        ],
+        "title": "DimensionInfo",
+        "description": "A field you can group or filter by."
+      },
+      "DimensionRef": {
+        "properties": {
+          "field": {
+            "type": "string",
+            "title": "Field"
+          },
+          "grain": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "day",
+                  "week",
+                  "month",
+                  "quarter",
+                  "year"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Grain"
+          }
+        },
+        "type": "object",
+        "required": [
+          "field"
+        ],
+        "title": "DimensionRef",
+        "description": "A dimension to group by. `grain` buckets a temporal field (e.g. by month)."
+      },
+      "Filter": {
+        "properties": {
+          "field": {
+            "type": "string",
+            "title": "Field"
+          },
+          "op": {
+            "type": "string",
+            "enum": [
+              "eq",
+              "ne",
+              "in",
+              "not_in",
+              "gt",
+              "gte",
+              "lt",
+              "lte",
+              "between",
+              "contains",
+              "relative"
+            ],
+            "title": "Op"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "integer"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ]
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "type": "object",
+        "required": [
+          "field",
+          "op"
+        ],
+        "title": "Filter",
+        "description": "A condition on a dimension; `relative` periods like \"last_week\" are resolved when the query runs."
       },
       "HTTPValidationError": {
         "properties": {
@@ -621,6 +1780,53 @@
         "title": "ItemUpdate",
         "description": "Every field is optional; only the fields you send are changed."
       },
+      "LoginRequest": {
+        "properties": {
+          "username": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Username"
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 1,
+            "title": "Password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "username",
+          "password"
+        ],
+        "title": "LoginRequest",
+        "description": "Username and password."
+      },
+      "MeasureInfo": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "label"
+        ],
+        "title": "MeasureInfo",
+        "description": "An aggregate you can chart (a sum, count or average)."
+      },
       "PlotlyFigure": {
         "properties": {
           "data": {
@@ -644,6 +1850,256 @@
         ],
         "title": "PlotlyFigure",
         "description": "A Plotly figure as JSON (the same shape as `fig.to_json()`)."
+      },
+      "QuerySpec": {
+        "properties": {
+          "dataset": {
+            "type": "string",
+            "title": "Dataset"
+          },
+          "dimensions": {
+            "items": {
+              "$ref": "#/components/schemas/DimensionRef"
+            },
+            "type": "array",
+            "maxItems": 3,
+            "title": "Dimensions"
+          },
+          "measures": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 8,
+            "title": "Measures"
+          },
+          "filters": {
+            "items": {
+              "$ref": "#/components/schemas/Filter"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Filters"
+          },
+          "sort": {
+            "items": {
+              "$ref": "#/components/schemas/SortBy"
+            },
+            "type": "array",
+            "maxItems": 3,
+            "title": "Sort"
+          },
+          "limit": {
+            "type": "integer",
+            "maximum": 5000.0,
+            "minimum": 1.0,
+            "title": "Limit",
+            "default": 1000
+          }
+        },
+        "type": "object",
+        "required": [
+          "dataset"
+        ],
+        "title": "QuerySpec",
+        "description": "What to fetch. With measures, rows are grouped by the dimensions; without, raw rows are returned."
+      },
+      "Recommendation": {
+        "properties": {
+          "best": {
+            "type": "string",
+            "enum": [
+              "bar",
+              "line",
+              "area",
+              "scatter",
+              "histogram",
+              "box",
+              "pie",
+              "donut",
+              "heatmap",
+              "radar",
+              "treemap",
+              "funnel",
+              "kpi",
+              "table"
+            ],
+            "title": "Best"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          },
+          "requested": {
+            "type": "string",
+            "enum": [
+              "bar",
+              "line",
+              "area",
+              "scatter",
+              "histogram",
+              "box",
+              "pie",
+              "donut",
+              "heatmap",
+              "radar",
+              "treemap",
+              "funnel",
+              "kpi",
+              "table"
+            ],
+            "title": "Requested"
+          },
+          "feasible": {
+            "type": "boolean",
+            "title": "Feasible"
+          },
+          "requested_note": {
+            "type": "string",
+            "title": "Requested Note",
+            "default": ""
+          },
+          "alternatives": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "bar",
+                "line",
+                "area",
+                "scatter",
+                "histogram",
+                "box",
+                "pie",
+                "donut",
+                "heatmap",
+                "radar",
+                "treemap",
+                "funnel",
+                "kpi",
+                "table"
+              ]
+            },
+            "type": "array",
+            "title": "Alternatives"
+          }
+        },
+        "type": "object",
+        "required": [
+          "best",
+          "reason",
+          "requested",
+          "feasible"
+        ],
+        "title": "Recommendation",
+        "description": "Which chart suits the result best, and whether the requested one can be drawn."
+      },
+      "SortBy": {
+        "properties": {
+          "field": {
+            "type": "string",
+            "title": "Field"
+          },
+          "desc": {
+            "type": "boolean",
+            "title": "Desc",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "field"
+        ],
+        "title": "SortBy",
+        "description": "Sort by a dimension or measure in the query."
+      },
+      "ThreadMessages": {
+        "properties": {
+          "messages": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Messages"
+          }
+        },
+        "type": "object",
+        "required": [
+          "messages"
+        ],
+        "title": "ThreadMessages",
+        "description": "A thread's messages in the Vercel AI SDK `UIMessage` shape."
+      },
+      "ThreadPublic": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "ThreadPublic",
+        "description": "A chat thread, without its messages."
+      },
+      "ThreadUpdate": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Title"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title"
+        ],
+        "title": "ThreadUpdate",
+        "description": "Rename a thread."
+      },
+      "UserPublic": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "username": {
+            "type": "string",
+            "title": "Username"
+          },
+          "display_name": {
+            "type": "string",
+            "title": "Display Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "username",
+          "display_name"
+        ],
+        "title": "UserPublic",
+        "description": "The signed-in user."
       },
       "ValidationError": {
         "properties": {
@@ -684,6 +2140,285 @@
           "type"
         ],
         "title": "ValidationError"
+      },
+      "WidgetCreate": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 200,
+            "title": "Title",
+            "default": ""
+          },
+          "spec": {
+            "$ref": "#/components/schemas/WidgetSpec"
+          },
+          "x": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "X"
+          },
+          "y": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Y"
+          },
+          "w": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 12.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "W"
+          },
+          "h": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 40.0,
+                "minimum": 2.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "H"
+          }
+        },
+        "type": "object",
+        "required": [
+          "spec"
+        ],
+        "title": "WidgetCreate",
+        "description": "A new widget; without a position it goes below the existing ones."
+      },
+      "WidgetPosition": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "x": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "X"
+          },
+          "y": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Y"
+          },
+          "w": {
+            "type": "integer",
+            "maximum": 12.0,
+            "minimum": 1.0,
+            "title": "W"
+          },
+          "h": {
+            "type": "integer",
+            "maximum": 40.0,
+            "minimum": 2.0,
+            "title": "H"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "x",
+          "y",
+          "w",
+          "h"
+        ],
+        "title": "WidgetPosition",
+        "description": "A widget's place on the 12-column grid."
+      },
+      "WidgetPublic": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "dashboard_id": {
+            "type": "integer",
+            "title": "Dashboard Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "spec": {
+            "$ref": "#/components/schemas/WidgetSpec"
+          },
+          "x": {
+            "type": "integer",
+            "title": "X"
+          },
+          "y": {
+            "type": "integer",
+            "title": "Y"
+          },
+          "w": {
+            "type": "integer",
+            "title": "W"
+          },
+          "h": {
+            "type": "integer",
+            "title": "H"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "dashboard_id",
+          "title",
+          "spec",
+          "x",
+          "y",
+          "w",
+          "h"
+        ],
+        "title": "WidgetPublic",
+        "description": "A widget and where it sits on the grid."
+      },
+      "WidgetResult": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "chart_type": {
+            "type": "string",
+            "enum": [
+              "bar",
+              "line",
+              "area",
+              "scatter",
+              "histogram",
+              "box",
+              "pie",
+              "donut",
+              "heatmap",
+              "radar",
+              "treemap",
+              "funnel",
+              "kpi",
+              "table"
+            ],
+            "title": "Chart Type"
+          },
+          "figure": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PlotlyFigure"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "columns": {
+            "items": {
+              "$ref": "#/components/schemas/ColumnInfo"
+            },
+            "type": "array",
+            "title": "Columns"
+          },
+          "rows": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Rows"
+          },
+          "row_count": {
+            "type": "integer",
+            "title": "Row Count"
+          },
+          "truncated": {
+            "type": "boolean",
+            "title": "Truncated"
+          },
+          "recommendation": {
+            "$ref": "#/components/schemas/Recommendation"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "chart_type",
+          "figure",
+          "columns",
+          "rows",
+          "row_count",
+          "truncated",
+          "recommendation"
+        ],
+        "title": "WidgetResult",
+        "description": "A widget's data and figure. `chart_type` is what was drawn (the recommendation if the request was infeasible)."
+      },
+      "WidgetSpec": {
+        "properties": {
+          "query": {
+            "$ref": "#/components/schemas/QuerySpec"
+          },
+          "chart": {
+            "$ref": "#/components/schemas/ChartSpec"
+          }
+        },
+        "type": "object",
+        "required": [
+          "query"
+        ],
+        "title": "WidgetSpec",
+        "description": "A query plus how to chart it: everything needed to redraw a widget with fresh data."
+      },
+      "WidgetUpdate": {
+        "properties": {
+          "title": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "spec": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/WidgetSpec"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "title": "WidgetUpdate",
+        "description": "Only the fields you send are changed."
       }
     }
   }

@@ -8,7 +8,10 @@ from alembic import context
 from sqlalchemy import Engine
 from sqlmodel import SQLModel
 
+from app.assistant import models as assistant_models  # noqa: F401  (CHAT_THREADS)
+from app.auth import models as auth_models  # noqa: F401  (registers the USERS table)
 from app.config import get_settings
+from app.dashboards import models as dashboards_models  # noqa: F401  (DASHBOARDS, WIDGETS)
 from app.db import create_db_engine
 from app.items import models as items_models  # noqa: F401  (registers the ITEMS table)
 

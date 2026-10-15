@@ -1,53 +1,99 @@
-"""Chat with an OpenAI model.
+"""Saved chat threads, always scoped to their owner (like dashboards).
 
-Kept separate from the HTTP layer so agent tooling can reuse it later. To give the
-assistant access to app data, pass OpenAI `tools` here and run the tool calls against
-each feature's service.py functions.
+A thread stores the whole pydantic-ai conversation, tool calls included, so a reloaded
+thread shows the same charts and the model sees exactly what it saw before.
 """
 
-from collections.abc import Iterator
+from collections.abc import Sequence
+from typing import Any
 
-from openai import OpenAI
+from pydantic_ai.messages import ModelMessage, ModelMessagesTypeAdapter, ModelRequest, UserPromptPart
+from pydantic_ai.ui.vercel_ai import VercelAIAdapter
+from sqlmodel import Session, select
 
-from app.assistant.prompts import SYSTEM_PROMPT
-from app.assistant.schemas import ChatMessage
-from app.config import Settings
-
-
-class AssistantNotConfiguredError(RuntimeError):
-    """Raised when no OpenAI API key is configured."""
+from app.assistant.models import NEW_THREAD_TITLE, ChatThread
+from app.db.types import utcnow
 
 
-def check_configured(settings: Settings) -> None:
-    """Raise if the assistant can't run, so callers can fail before streaming starts."""
-    if not settings.openai_api_key:
-        raise AssistantNotConfiguredError("No OpenAI API key. Set OPENAI_API_KEY in backend/.env (see .env.example).")
+def list_threads(session: Session, user_id: int) -> Sequence[ChatThread]:
+    statement = select(ChatThread).where(ChatThread.owner_id == user_id).order_by(ChatThread.updated_at.desc())
+    return session.exec(statement).all()
 
 
-def _client(settings: Settings) -> OpenAI:
-    check_configured(settings)
-    return OpenAI(
-        api_key=settings.openai_api_key,
-        # Optional: point at Azure OpenAI or another OpenAI-compatible gateway
-        base_url=settings.openai_base_url or None,
-        timeout=settings.openai_timeout_seconds,
-    )
+def create_thread(session: Session, user_id: int) -> ChatThread:
+    thread = ChatThread(owner_id=user_id)
+    session.add(thread)
+    session.flush()
+    return thread
 
 
-def stream_reply(settings: Settings, messages: list[ChatMessage]) -> Iterator[str]:
-    """Yield reply text chunks as the model produces them."""
-    client = _client(settings)
-    stream = client.chat.completions.create(
-        model=settings.openai_model,
-        messages=[
-            {"role": "system", "content": SYSTEM_PROMPT},
-            *({"role": m.role, "content": m.content} for m in messages),
-        ],
-        stream=True,
-    )
-    for chunk in stream:
-        if not chunk.choices:
-            continue
-        text = chunk.choices[0].delta.content
-        if text:
-            yield text
+def get_thread(session: Session, user_id: int, thread_id: int) -> ChatThread | None:
+    thread = session.get(ChatThread, thread_id)
+    return thread if thread is not None and thread.owner_id == user_id else None
+
+
+def rename_thread(session: Session, user_id: int, thread_id: int, title: str) -> ChatThread | None:
+    thread = get_thread(session, user_id, thread_id)
+    if thread is None:
+        return None
+    thread.title = title.strip()
+    session.add(thread)
+    session.flush()
+    return thread
+
+
+def delete_thread(session: Session, user_id: int, thread_id: int) -> bool:
+    thread = get_thread(session, user_id, thread_id)
+    if thread is None:
+        return False
+    session.delete(thread)
+    return True
+
+
+def load_history(thread: ChatThread) -> list[ModelMessage]:
+    return ModelMessagesTypeAdapter.validate_json(thread.messages)
+
+
+def _first_prompt(messages: Sequence[ModelMessage]) -> str:
+    for message in messages:
+        if isinstance(message, ModelRequest):
+            for part in message.parts:
+                if isinstance(part, UserPromptPart) and isinstance(part.content, str):
+                    return part.content
+    return ""
+
+
+def save_history(session: Session, user_id: int, thread_id: int, messages: Sequence[ModelMessage]) -> None:
+    thread = get_thread(session, user_id, thread_id)
+    if thread is None:
+        return
+    thread.messages = ModelMessagesTypeAdapter.dump_json(list(messages)).decode()
+    if thread.title == NEW_THREAD_TITLE and (prompt := _first_prompt(messages)):
+        # Name the thread after its first question
+        thread.title = prompt if len(prompt) <= 60 else prompt[:57].rstrip() + "…"
+    thread.updated_at = utcnow()
+    session.add(thread)
+    session.flush()
+
+
+def drop_last_turn(history: list[ModelMessage]) -> list[ModelMessage]:
+    """History before the latest user prompt, for "regenerate": that turn is run again."""
+    for i in range(len(history) - 1, -1, -1):
+        message = history[i]
+        if isinstance(message, ModelRequest) and any(isinstance(p, UserPromptPart) for p in message.parts):
+            return history[:i]
+    return history
+
+
+def ui_messages(thread: ChatThread) -> list[dict[str, Any]]:
+    """The thread as Vercel AI SDK UI messages, for the chat to show on load."""
+    merged: list[dict[str, Any]] = []
+    for message in VercelAIAdapter.dump_messages(load_history(thread)):
+        data = message.model_dump(mode="json", by_alias=True, exclude_none=True)
+        # One reply can span several model responses (tool call, then text); the live
+        # stream shows them as one message, so do the same here
+        if merged and data["role"] == "assistant" and merged[-1]["role"] == "assistant":
+            merged[-1]["parts"].extend(data["parts"])
+        else:
+            merged.append(data)
+    return merged

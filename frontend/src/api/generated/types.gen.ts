@@ -39,27 +39,227 @@ export type CategoryTotal = {
 };
 
 /**
- * ChatMessage
+ * ChartSpec
+ *
+ * How to draw the result. Empty fields are filled from the query (x = first dimension, y = measures).
  */
-export type ChatMessage = {
+export type ChartSpec = {
     /**
-     * Role
+     * Type
      */
-    role: 'user' | 'assistant';
+    type?: 'bar' | 'line' | 'area' | 'scatter' | 'histogram' | 'box' | 'pie' | 'donut' | 'heatmap' | 'radar' | 'treemap' | 'funnel' | 'kpi' | 'table';
     /**
-     * Content
+     * Title
      */
-    content: string;
+    title?: string;
+    /**
+     * X
+     */
+    x?: string | null;
+    /**
+     * Y
+     */
+    y?: Array<string>;
+    /**
+     * Color
+     */
+    color?: string | null;
+    /**
+     * Orientation
+     */
+    orientation?: 'v' | 'h' | null;
+    /**
+     * Stacked
+     */
+    stacked?: boolean;
+    /**
+     * Top N
+     */
+    top_n?: number | null;
 };
 
 /**
- * ChatRequest
+ * ColumnInfo
+ *
+ * A column in a widget's result rows.
  */
-export type ChatRequest = {
+export type ColumnInfo = {
     /**
-     * Messages
+     * Name
      */
-    messages: Array<ChatMessage>;
+    name: string;
+    /**
+     * Label
+     */
+    label: string;
+    /**
+     * Kind
+     */
+    kind: 'categorical' | 'temporal' | 'numeric' | 'text' | 'measure';
+};
+
+/**
+ * DashboardCreate
+ *
+ * A new dashboard.
+ */
+export type DashboardCreate = {
+    /**
+     * Name
+     */
+    name: string;
+};
+
+/**
+ * DashboardDetail
+ *
+ * A dashboard with its widgets.
+ */
+export type DashboardDetail = {
+    /**
+     * Id
+     */
+    id: number;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+    /**
+     * Widgets
+     */
+    widgets: Array<WidgetPublic>;
+};
+
+/**
+ * DashboardPublic
+ *
+ * A dashboard, without its widgets.
+ */
+export type DashboardPublic = {
+    /**
+     * Id
+     */
+    id: number;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+};
+
+/**
+ * DashboardUpdate
+ *
+ * Rename a dashboard.
+ */
+export type DashboardUpdate = {
+    /**
+     * Name
+     */
+    name: string;
+};
+
+/**
+ * DatasetInfo
+ *
+ * A dataset the builder and the assistant can query.
+ */
+export type DatasetInfo = {
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Label
+     */
+    label: string;
+    /**
+     * Description
+     */
+    description: string;
+    /**
+     * Dimensions
+     */
+    dimensions: Array<DimensionInfo>;
+    /**
+     * Measures
+     */
+    measures: Array<MeasureInfo>;
+};
+
+/**
+ * DimensionInfo
+ *
+ * A field you can group or filter by.
+ */
+export type DimensionInfo = {
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Label
+     */
+    label: string;
+    /**
+     * Kind
+     */
+    kind: 'categorical' | 'temporal' | 'numeric' | 'text';
+    /**
+     * Description
+     */
+    description?: string;
+};
+
+/**
+ * DimensionRef
+ *
+ * A dimension to group by. `grain` buckets a temporal field (e.g. by month).
+ */
+export type DimensionRef = {
+    /**
+     * Field
+     */
+    field: string;
+    /**
+     * Grain
+     */
+    grain?: 'day' | 'week' | 'month' | 'quarter' | 'year' | null;
+};
+
+/**
+ * Filter
+ *
+ * A condition on a dimension; `relative` periods like "last_week" are resolved when the query runs.
+ */
+export type Filter = {
+    /**
+     * Field
+     */
+    field: string;
+    /**
+     * Op
+     */
+    op: 'eq' | 'ne' | 'in' | 'not_in' | 'gt' | 'gte' | 'lt' | 'lte' | 'between' | 'contains' | 'relative';
+    /**
+     * Value
+     */
+    value?: string | number | number | boolean | Array<string | number | number> | null;
 };
 
 /**
@@ -165,6 +365,42 @@ export type ItemUpdate = {
 };
 
 /**
+ * LoginRequest
+ *
+ * Username and password.
+ */
+export type LoginRequest = {
+    /**
+     * Username
+     */
+    username: string;
+    /**
+     * Password
+     */
+    password: string;
+};
+
+/**
+ * MeasureInfo
+ *
+ * An aggregate you can chart (a sum, count or average).
+ */
+export type MeasureInfo = {
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Label
+     */
+    label: string;
+    /**
+     * Description
+     */
+    description?: string;
+};
+
+/**
  * PlotlyFigure
  *
  * A Plotly figure as JSON (the same shape as `fig.to_json()`).
@@ -182,6 +418,156 @@ export type PlotlyFigure = {
     layout: {
         [key: string]: unknown;
     };
+};
+
+/**
+ * QuerySpec
+ *
+ * What to fetch. With measures, rows are grouped by the dimensions; without, raw rows are returned.
+ */
+export type QuerySpec = {
+    /**
+     * Dataset
+     */
+    dataset: string;
+    /**
+     * Dimensions
+     */
+    dimensions?: Array<DimensionRef>;
+    /**
+     * Measures
+     */
+    measures?: Array<string>;
+    /**
+     * Filters
+     */
+    filters?: Array<Filter>;
+    /**
+     * Sort
+     */
+    sort?: Array<SortBy>;
+    /**
+     * Limit
+     */
+    limit?: number;
+};
+
+/**
+ * Recommendation
+ *
+ * Which chart suits the result best, and whether the requested one can be drawn.
+ */
+export type Recommendation = {
+    /**
+     * Best
+     */
+    best: 'bar' | 'line' | 'area' | 'scatter' | 'histogram' | 'box' | 'pie' | 'donut' | 'heatmap' | 'radar' | 'treemap' | 'funnel' | 'kpi' | 'table';
+    /**
+     * Reason
+     */
+    reason: string;
+    /**
+     * Requested
+     */
+    requested: 'bar' | 'line' | 'area' | 'scatter' | 'histogram' | 'box' | 'pie' | 'donut' | 'heatmap' | 'radar' | 'treemap' | 'funnel' | 'kpi' | 'table';
+    /**
+     * Feasible
+     */
+    feasible: boolean;
+    /**
+     * Requested Note
+     */
+    requested_note?: string;
+    /**
+     * Alternatives
+     */
+    alternatives?: Array<'bar' | 'line' | 'area' | 'scatter' | 'histogram' | 'box' | 'pie' | 'donut' | 'heatmap' | 'radar' | 'treemap' | 'funnel' | 'kpi' | 'table'>;
+};
+
+/**
+ * SortBy
+ *
+ * Sort by a dimension or measure in the query.
+ */
+export type SortBy = {
+    /**
+     * Field
+     */
+    field: string;
+    /**
+     * Desc
+     */
+    desc?: boolean;
+};
+
+/**
+ * ThreadMessages
+ *
+ * A thread's messages in the Vercel AI SDK `UIMessage` shape.
+ */
+export type ThreadMessages = {
+    /**
+     * Messages
+     */
+    messages: Array<{
+        [key: string]: unknown;
+    }>;
+};
+
+/**
+ * ThreadPublic
+ *
+ * A chat thread, without its messages.
+ */
+export type ThreadPublic = {
+    /**
+     * Id
+     */
+    id: number;
+    /**
+     * Title
+     */
+    title: string;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+};
+
+/**
+ * ThreadUpdate
+ *
+ * Rename a thread.
+ */
+export type ThreadUpdate = {
+    /**
+     * Title
+     */
+    title: string;
+};
+
+/**
+ * UserPublic
+ *
+ * The signed-in user.
+ */
+export type UserPublic = {
+    /**
+     * Id
+     */
+    id: number;
+    /**
+     * Username
+     */
+    username: string;
+    /**
+     * Display Name
+     */
+    display_name: string;
 };
 
 /**
@@ -212,6 +598,159 @@ export type ValidationError = {
     };
 };
 
+/**
+ * WidgetCreate
+ *
+ * A new widget; without a position it goes below the existing ones.
+ */
+export type WidgetCreate = {
+    /**
+     * Title
+     */
+    title?: string;
+    spec: WidgetSpec;
+    /**
+     * X
+     */
+    x?: number | null;
+    /**
+     * Y
+     */
+    y?: number | null;
+    /**
+     * W
+     */
+    w?: number | null;
+    /**
+     * H
+     */
+    h?: number | null;
+};
+
+/**
+ * WidgetPosition
+ *
+ * A widget's place on the 12-column grid.
+ */
+export type WidgetPosition = {
+    /**
+     * Id
+     */
+    id: number;
+    /**
+     * X
+     */
+    x: number;
+    /**
+     * Y
+     */
+    y: number;
+    /**
+     * W
+     */
+    w: number;
+    /**
+     * H
+     */
+    h: number;
+};
+
+/**
+ * WidgetPublic
+ *
+ * A widget and where it sits on the grid.
+ */
+export type WidgetPublic = {
+    /**
+     * Id
+     */
+    id: number;
+    /**
+     * Dashboard Id
+     */
+    dashboard_id: number;
+    /**
+     * Title
+     */
+    title: string;
+    spec: WidgetSpec;
+    /**
+     * X
+     */
+    x: number;
+    /**
+     * Y
+     */
+    y: number;
+    /**
+     * W
+     */
+    w: number;
+    /**
+     * H
+     */
+    h: number;
+};
+
+/**
+ * WidgetResult
+ *
+ * A widget's data and figure. `chart_type` is what was drawn (the recommendation if the request was infeasible).
+ */
+export type WidgetResult = {
+    /**
+     * Title
+     */
+    title: string;
+    /**
+     * Chart Type
+     */
+    chart_type: 'bar' | 'line' | 'area' | 'scatter' | 'histogram' | 'box' | 'pie' | 'donut' | 'heatmap' | 'radar' | 'treemap' | 'funnel' | 'kpi' | 'table';
+    figure: PlotlyFigure | null;
+    /**
+     * Columns
+     */
+    columns: Array<ColumnInfo>;
+    /**
+     * Rows
+     */
+    rows: Array<{
+        [key: string]: unknown;
+    }>;
+    /**
+     * Row Count
+     */
+    row_count: number;
+    /**
+     * Truncated
+     */
+    truncated: boolean;
+    recommendation: Recommendation;
+};
+
+/**
+ * WidgetSpec
+ *
+ * A query plus how to chart it: everything needed to redraw a widget with fresh data.
+ */
+export type WidgetSpec = {
+    query: QuerySpec;
+    chart?: ChartSpec;
+};
+
+/**
+ * WidgetUpdate
+ *
+ * Only the fields you send are changed.
+ */
+export type WidgetUpdate = {
+    /**
+     * Title
+     */
+    title?: string | null;
+    spec?: WidgetSpec | null;
+};
+
 export type HealthData = {
     body?: never;
     path?: never;
@@ -227,6 +766,63 @@ export type HealthResponses = {
 };
 
 export type HealthResponse = HealthResponses[keyof HealthResponses];
+
+export type LoginData = {
+    body: LoginRequest;
+    path?: never;
+    query?: never;
+    url: '/api/auth/login';
+};
+
+export type LoginErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type LoginError = LoginErrors[keyof LoginErrors];
+
+export type LoginResponses = {
+    /**
+     * Successful Response
+     */
+    200: UserPublic;
+};
+
+export type LoginResponse = LoginResponses[keyof LoginResponses];
+
+export type LogoutData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/auth/logout';
+};
+
+export type LogoutResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type LogoutResponse = LogoutResponses[keyof LogoutResponses];
+
+export type CurrentUserData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/auth/me';
+};
+
+export type CurrentUserResponses = {
+    /**
+     * Successful Response
+     */
+    200: UserPublic;
+};
+
+export type CurrentUserResponse = CurrentUserResponses[keyof CurrentUserResponses];
 
 export type ListItemsData = {
     body?: never;
@@ -413,6 +1009,380 @@ export type UpdateItemResponses = {
 
 export type UpdateItemResponse = UpdateItemResponses[keyof UpdateItemResponses];
 
+export type ListDatasetsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/analytics/datasets';
+};
+
+export type ListDatasetsResponses = {
+    /**
+     * Response List Datasets
+     *
+     * Successful Response
+     */
+    200: Array<DatasetInfo>;
+};
+
+export type ListDatasetsResponse = ListDatasetsResponses[keyof ListDatasetsResponses];
+
+export type DimensionValuesData = {
+    body?: never;
+    path: {
+        /**
+         * Dataset
+         */
+        dataset: string;
+        /**
+         * Field
+         */
+        field: string;
+    };
+    query?: {
+        /**
+         * Search
+         */
+        search?: string;
+        /**
+         * Limit
+         */
+        limit?: number;
+    };
+    url: '/api/analytics/datasets/{dataset}/values/{field}';
+};
+
+export type DimensionValuesErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type DimensionValuesError = DimensionValuesErrors[keyof DimensionValuesErrors];
+
+export type DimensionValuesResponses = {
+    /**
+     * Response Dimension Values
+     *
+     * Successful Response
+     */
+    200: Array<unknown>;
+};
+
+export type DimensionValuesResponse = DimensionValuesResponses[keyof DimensionValuesResponses];
+
+export type PreviewWidgetData = {
+    body: WidgetSpec;
+    path?: never;
+    query?: never;
+    url: '/api/analytics/preview';
+};
+
+export type PreviewWidgetErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type PreviewWidgetError = PreviewWidgetErrors[keyof PreviewWidgetErrors];
+
+export type PreviewWidgetResponses = {
+    /**
+     * Successful Response
+     */
+    200: WidgetResult;
+};
+
+export type PreviewWidgetResponse = PreviewWidgetResponses[keyof PreviewWidgetResponses];
+
+export type ListDashboardsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/dashboards';
+};
+
+export type ListDashboardsResponses = {
+    /**
+     * Response List Dashboards
+     *
+     * Successful Response
+     */
+    200: Array<DashboardPublic>;
+};
+
+export type ListDashboardsResponse = ListDashboardsResponses[keyof ListDashboardsResponses];
+
+export type CreateDashboardData = {
+    body: DashboardCreate;
+    path?: never;
+    query?: never;
+    url: '/api/dashboards';
+};
+
+export type CreateDashboardErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type CreateDashboardError = CreateDashboardErrors[keyof CreateDashboardErrors];
+
+export type CreateDashboardResponses = {
+    /**
+     * Successful Response
+     */
+    201: DashboardPublic;
+};
+
+export type CreateDashboardResponse = CreateDashboardResponses[keyof CreateDashboardResponses];
+
+export type DeleteDashboardData = {
+    body?: never;
+    path: {
+        /**
+         * Dashboard Id
+         */
+        dashboard_id: number;
+    };
+    query?: never;
+    url: '/api/dashboards/{dashboard_id}';
+};
+
+export type DeleteDashboardErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type DeleteDashboardError = DeleteDashboardErrors[keyof DeleteDashboardErrors];
+
+export type DeleteDashboardResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type DeleteDashboardResponse = DeleteDashboardResponses[keyof DeleteDashboardResponses];
+
+export type GetDashboardData = {
+    body?: never;
+    path: {
+        /**
+         * Dashboard Id
+         */
+        dashboard_id: number;
+    };
+    query?: never;
+    url: '/api/dashboards/{dashboard_id}';
+};
+
+export type GetDashboardErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetDashboardError = GetDashboardErrors[keyof GetDashboardErrors];
+
+export type GetDashboardResponses = {
+    /**
+     * Successful Response
+     */
+    200: DashboardDetail;
+};
+
+export type GetDashboardResponse = GetDashboardResponses[keyof GetDashboardResponses];
+
+export type RenameDashboardData = {
+    body: DashboardUpdate;
+    path: {
+        /**
+         * Dashboard Id
+         */
+        dashboard_id: number;
+    };
+    query?: never;
+    url: '/api/dashboards/{dashboard_id}';
+};
+
+export type RenameDashboardErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type RenameDashboardError = RenameDashboardErrors[keyof RenameDashboardErrors];
+
+export type RenameDashboardResponses = {
+    /**
+     * Successful Response
+     */
+    200: DashboardPublic;
+};
+
+export type RenameDashboardResponse = RenameDashboardResponses[keyof RenameDashboardResponses];
+
+export type SaveDashboardLayoutData = {
+    /**
+     * Positions
+     */
+    body: Array<WidgetPosition>;
+    path: {
+        /**
+         * Dashboard Id
+         */
+        dashboard_id: number;
+    };
+    query?: never;
+    url: '/api/dashboards/{dashboard_id}/layout';
+};
+
+export type SaveDashboardLayoutErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type SaveDashboardLayoutError = SaveDashboardLayoutErrors[keyof SaveDashboardLayoutErrors];
+
+export type SaveDashboardLayoutResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type SaveDashboardLayoutResponse = SaveDashboardLayoutResponses[keyof SaveDashboardLayoutResponses];
+
+export type CreateWidgetData = {
+    body: WidgetCreate;
+    path: {
+        /**
+         * Dashboard Id
+         */
+        dashboard_id: number;
+    };
+    query?: never;
+    url: '/api/dashboards/{dashboard_id}/widgets';
+};
+
+export type CreateWidgetErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type CreateWidgetError = CreateWidgetErrors[keyof CreateWidgetErrors];
+
+export type CreateWidgetResponses = {
+    /**
+     * Successful Response
+     */
+    201: WidgetPublic;
+};
+
+export type CreateWidgetResponse = CreateWidgetResponses[keyof CreateWidgetResponses];
+
+export type DeleteWidgetData = {
+    body?: never;
+    path: {
+        /**
+         * Widget Id
+         */
+        widget_id: number;
+    };
+    query?: never;
+    url: '/api/widgets/{widget_id}';
+};
+
+export type DeleteWidgetErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type DeleteWidgetError = DeleteWidgetErrors[keyof DeleteWidgetErrors];
+
+export type DeleteWidgetResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type DeleteWidgetResponse = DeleteWidgetResponses[keyof DeleteWidgetResponses];
+
+export type UpdateWidgetData = {
+    body: WidgetUpdate;
+    path: {
+        /**
+         * Widget Id
+         */
+        widget_id: number;
+    };
+    query?: never;
+    url: '/api/widgets/{widget_id}';
+};
+
+export type UpdateWidgetErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type UpdateWidgetError = UpdateWidgetErrors[keyof UpdateWidgetErrors];
+
+export type UpdateWidgetResponses = {
+    /**
+     * Successful Response
+     */
+    200: WidgetPublic;
+};
+
+export type UpdateWidgetResponse = UpdateWidgetResponses[keyof UpdateWidgetResponses];
+
+export type WidgetDataData = {
+    body?: never;
+    path: {
+        /**
+         * Widget Id
+         */
+        widget_id: number;
+    };
+    query?: never;
+    url: '/api/widgets/{widget_id}/data';
+};
+
+export type WidgetDataErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type WidgetDataError = WidgetDataErrors[keyof WidgetDataErrors];
+
+export type WidgetDataResponses = {
+    /**
+     * Successful Response
+     */
+    200: WidgetResult;
+};
+
+export type WidgetDataResponse = WidgetDataResponses[keyof WidgetDataResponses];
+
 export type AssistantStatusData = {
     body?: never;
     path?: never;
@@ -429,21 +1399,136 @@ export type AssistantStatusResponses = {
 
 export type AssistantStatusResponse = AssistantStatusResponses[keyof AssistantStatusResponses];
 
-export type AssistantChatData = {
-    body: ChatRequest;
+export type ListThreadsData = {
+    body?: never;
     path?: never;
     query?: never;
-    url: '/api/assistant/chat';
+    url: '/api/assistant/threads';
 };
 
-export type AssistantChatErrors = {
+export type ListThreadsResponses = {
+    /**
+     * Response List Threads
+     *
+     * Successful Response
+     */
+    200: Array<ThreadPublic>;
+};
+
+export type ListThreadsResponse = ListThreadsResponses[keyof ListThreadsResponses];
+
+export type CreateThreadData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/assistant/threads';
+};
+
+export type CreateThreadResponses = {
+    /**
+     * Successful Response
+     */
+    201: ThreadPublic;
+};
+
+export type CreateThreadResponse = CreateThreadResponses[keyof CreateThreadResponses];
+
+export type ThreadMessagesData = {
+    body?: never;
+    path: {
+        /**
+         * Thread Id
+         */
+        thread_id: number;
+    };
+    query?: never;
+    url: '/api/assistant/threads/{thread_id}/messages';
+};
+
+export type ThreadMessagesErrors = {
     /**
      * Validation Error
      */
     422: HttpValidationError;
 };
 
-export type AssistantChatError = AssistantChatErrors[keyof AssistantChatErrors];
+export type ThreadMessagesError = ThreadMessagesErrors[keyof ThreadMessagesErrors];
+
+export type ThreadMessagesResponses = {
+    /**
+     * Successful Response
+     */
+    200: ThreadMessages;
+};
+
+export type ThreadMessagesResponse = ThreadMessagesResponses[keyof ThreadMessagesResponses];
+
+export type DeleteThreadData = {
+    body?: never;
+    path: {
+        /**
+         * Thread Id
+         */
+        thread_id: number;
+    };
+    query?: never;
+    url: '/api/assistant/threads/{thread_id}';
+};
+
+export type DeleteThreadErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type DeleteThreadError = DeleteThreadErrors[keyof DeleteThreadErrors];
+
+export type DeleteThreadResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type DeleteThreadResponse = DeleteThreadResponses[keyof DeleteThreadResponses];
+
+export type RenameThreadData = {
+    body: ThreadUpdate;
+    path: {
+        /**
+         * Thread Id
+         */
+        thread_id: number;
+    };
+    query?: never;
+    url: '/api/assistant/threads/{thread_id}';
+};
+
+export type RenameThreadErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type RenameThreadError = RenameThreadErrors[keyof RenameThreadErrors];
+
+export type RenameThreadResponses = {
+    /**
+     * Successful Response
+     */
+    200: ThreadPublic;
+};
+
+export type RenameThreadResponse = RenameThreadResponses[keyof RenameThreadResponses];
+
+export type AssistantChatData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/assistant/chat';
+};
 
 export type AssistantChatResponses = {
     /**

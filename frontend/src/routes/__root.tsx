@@ -1,19 +1,27 @@
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { createRootRoute, Link, Outlet } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
-import { MessageSquare } from 'lucide-react'
-import { useState } from 'react'
-import { AssistantPanel } from '@/components/assistant/AssistantPanel'
 import { Button } from '@/components/ui/button'
 import { useTheme } from '@/lib/theme'
 
 export const Route = createRootRoute({
-  component: RootLayout,
+  // Login is bypassed for the demo: the API treats anonymous requests as a demo user
+  // (backend/app/auth/deps.py). To require sign-in again, restore the beforeLoad guard
+  // from git history and the /login route.
+  component: AppLayout,
 })
 
-function RootLayout() {
+/**
+ * The assistant is hidden for now: no Explore link, no Assistant button, no side panel.
+ * Nothing was deleted. To bring it back, restore in this file:
+ *   - `const [assistantOpen, setAssistantOpen] = useState(false)`
+ *   - the header Button that toggles it (MessageSquare icon)
+ *   - `{assistantOpen && <div className="w-[380px] shrink-0"><AssistantPanel onClose={...} /></div>}`
+ *   - the <Link to="/explore"> nav entry
+ * and drop the redirect in routes/explore.tsx.
+ */
+function AppLayout() {
   const { theme, toggleTheme } = useTheme()
-  const [assistantOpen, setAssistantOpen] = useState(false)
 
   return (
     <div className="flex h-svh flex-col bg-background text-foreground">
@@ -23,6 +31,8 @@ function RootLayout() {
           <Link to="/" className="text-sm [&.active]:font-semibold">
             Dashboard
           </Link>
+          {/* Explore (the full-page agent view) is hidden for now; the route still
+              works at /explore. Put this link back to show it again. */}
           <Link to="/items" className="text-sm [&.active]:font-semibold">
             Items
           </Link>
@@ -30,10 +40,6 @@ function RootLayout() {
             FORA
           </Link>
           <div className="ml-auto flex items-center gap-2">
-            <Button variant="outline" size="sm" className="gap-2" onClick={() => setAssistantOpen((o) => !o)}>
-              <MessageSquare className="h-4 w-4" />
-              Assistant
-            </Button>
             <Button variant="outline" size="sm" onClick={toggleTheme}>
               {theme === 'light' ? 'Dark' : 'Light'} mode
             </Button>
@@ -47,11 +53,6 @@ function RootLayout() {
             <Outlet />
           </div>
         </main>
-        {assistantOpen && (
-          <div className="w-[380px] shrink-0">
-            <AssistantPanel onClose={() => setAssistantOpen(false)} />
-          </div>
-        )}
       </div>
 
       {import.meta.env.DEV && (

@@ -1,21 +1,10 @@
-import pytest
-from fastapi.testclient import TestClient
-
 from app.config import Settings
-from app.main import create_app
 
 SEEDED_ITEMS = 8  # rows inserted by migration 0002_seed_items
 
 
-@pytest.fixture
-def client(tmp_path):
-    app = create_app(Settings(sqlite_path=tmp_path / "test.db"))
-    with TestClient(app) as c:
-        yield c
-
-
-def test_health(client):
-    res = client.get("/api/health")
+def test_health(anon_client):
+    res = anon_client.get("/api/health")
     assert res.status_code == 200
     assert res.json() == {"status": "ok", "database": "sqlite (up)"}
 
