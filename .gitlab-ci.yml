@@ -1,0 +1,23 @@
+# Developer docs (mkdocs.yml). Every commit to the default branch publishes them to GitLab
+# Pages; merge requests only build them, so a broken link or page fails before merging.
+
+docs:
+  stage: test
+  image: python:3.12-slim
+  script:
+    - pip install -r docs/requirements.txt
+    - mkdocs build --strict --site-dir public
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes: [DEV.md, docs/**/*, mkdocs.yml]
+
+pages:
+  stage: deploy
+  image: python:3.12-slim
+  script:
+    - pip install -r docs/requirements.txt
+    - mkdocs build --strict --site-dir public
+  artifacts:
+    paths: [public]
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH

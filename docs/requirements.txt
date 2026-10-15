@@ -1,0 +1,4 @@
+# Docs site only (mkdocs.yml); not needed to run the app.
+mkdocs-material>=9.6,<10
+# MkDocs 2.0 drops plugins and hooks (docs/hooks.py relies on them).
+mkdocs>=1.6,<2

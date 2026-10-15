@@ -8,3 +8,5 @@ backend/data/
 .env
 *.log
 .tanstack/
+site/
+public/
