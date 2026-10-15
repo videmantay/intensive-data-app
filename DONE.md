@@ -8,6 +8,11 @@ this before starting work; search it when you need the history of a decision.
 
 ## 2026-10-15
 
+- [x] **Developer docs site on GitLab Pages.** `mkdocs.yml` + `docs/` (MkDocs, Material theme)
+  publish `DEV.md` and a best-practices link page per library (`docs/libraries.md`).
+  `docs/hooks.py` pulls in the root `DEV.md` and points its code links at the GitLab repo, so
+  there is only one copy. `.gitlab-ci.yml`: `pages` deploys on the default branch; `docs`
+  builds with `--strict` on merge requests. MkDocs is pinned below 2.0, which drops hooks.
 - [x] **FORA input page is an AG Grid sheet.** `frontend/src/routes/fora.tsx` uses `<DataGrid>`
   instead of a table of shadcn inputs. Columns with a fixed list of values open a dropdown on
   one click: status and location use `agSelectCellEditor` (`dropdown()`); risk and trend use a

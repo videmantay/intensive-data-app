@@ -62,6 +62,12 @@ Status key: `[ ]` open · `[~]` in progress
   `items`; the dropdown lists (status, locations) should then come from the API, and the
   backend should validate values (all cells are plain strings for now).
 
+- [ ] **Docs site not yet run on GitLab.** `origin` is still GitHub, which ignores
+  `.gitlab-ci.yml`. After pushing to GitLab, check the first `pages` run and the URL under
+  Deploy → Pages, and that runners can reach PyPI (or point pip at the internal mirror).
+- [ ] **Material for MkDocs is in maintenance mode** and MkDocs 2.0 drops hooks. Fine while
+  pinned (`docs/requirements.txt`); revisit if a 1.x security fix stops coming.
+
 ## Decisions pending
 
 - [ ] Dashboards and chats created while signed in as a real user (e.g. `lee`) are invisible

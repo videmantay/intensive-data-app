@@ -57,13 +57,14 @@ search it when you need the history of a decision.
 | frontend | `npm run dev` | UI on :5173 |
 | frontend | `npm run gen:api` | Regenerate the API client from the backend |
 | frontend | `npm run build` / `npm run lint` | Type-check + build, lint |
+| repo root | `uvx --with-requirements docs/requirements.txt mkdocs serve` | Preview the developer docs site (GitLab Pages) on :8000 |
 
 If Windows App Control blocks `.venv/Scripts/*.exe` (`os error 4551`, or a `uv trampoline`
 error), run the module instead: `uv run python -m fastapi dev app/main.py`, `uv run python -m pytest`.
 
 ## Analytics, dashboards and the assistant
 
-[DEV.md](DEV.md) is the developer-facing explanation of this section; keep it in step when this changes.
+[DEV.md](DEV.md) is the developer-facing explanation of this section; keep it in step when this changes. It is also published, with `docs/libraries.md` (best-practice links per library), as the docs site built by `.gitlab-ci.yml`; add a library there when you add one to the app.
 
 Everything chart-shaped shares one **`WidgetSpec`** (`app/analytics/spec.py`): dataset, dimensions (with an optional time grain), measures, filters, and a chart type. It never contains SQL.
 

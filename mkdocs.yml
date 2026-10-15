@@ -1,0 +1,46 @@
+# Developer docs site, published to GitLab Pages by the `pages` job in .gitlab-ci.yml.
+# Preview locally from the repo root:  uvx --with-requirements docs/requirements.txt mkdocs serve
+site_name: FieldOps developer docs
+site_url: !ENV CI_PAGES_URL
+repo_url: !ENV CI_PROJECT_URL
+
+docs_dir: docs
+exclude_docs: |
+  hooks.py
+  requirements.txt
+  __pycache__/
+
+# Publishes the root DEV.md as dev.md (see docs/hooks.py), so there is one copy to keep current.
+hooks:
+  - docs/hooks.py
+
+nav:
+  - Home: index.md
+  - Developer guide: dev.md
+  - Library best practices: libraries.md
+
+theme:
+  name: material
+  features:
+    - content.code.copy
+    - navigation.sections
+    - toc.follow
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/weather-night
+        name: Dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/weather-sunny
+        name: Light mode
+
+markdown_extensions:
+  - admonition
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.highlight
+  - pymdownx.superfences
